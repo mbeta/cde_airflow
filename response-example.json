@@ -1,0 +1,264 @@
+{
+    "LanguageCode": "EN",
+    "SearchParameters": {},
+    "SearchResult": {
+        "SearchResultCount": 2,
+        "SearchResultCountAll": 194,
+        "SearchResultItems": [
+            {
+                "MatchedObjectId": "811819400",
+                "MatchedObjectDescriptor": {
+                    "PositionID": "IHS-24-HQ-12562788-DE",
+                    "PositionTitle": "Information Technology Specialist (Application Software)",
+                    "PositionURI": "https://www.usajobs.gov:443/GetJob/ViewDetails/811819400",
+                    "ApplyURI": [
+                        "https://www.usajobs.gov:443/GetJob/ViewDetails/811819400"
+                    ],
+                    "PositionLocationDisplay": "Anywhere in the U.S. (remote job)",
+                    "PositionLocation": [
+                        {
+                            "LocationName": "Anywhere in the U.S. (remote job), United States",
+                            "CountryCode": "United States",
+                            "CityName": "Anywhere in the U.S. (remote job), United States",
+                            "Longitude": 0,
+                            "Latitude": 0
+                        }
+                    ],
+                    "OrganizationName": "Indian Health Service",
+                    "DepartmentName": "Department of Health and Human Services",
+                    "SubAgency": "Division of Health Information Technology Modernization & Operations",
+                    "JobCategory": [
+                        {
+                            "Name": "Information Technology Management",
+                            "Code": "2210"
+                        }
+                    ],
+                    "JobGrade": [
+                        {
+                            "Code": "GS"
+                        }
+                    ],
+                    "PositionSchedule": [
+                        {
+                            "Name": "",
+                            "Code": "1"
+                        }
+                    ],
+                    "PositionOfferingType": [
+                        {
+                            "Name": "",
+                            "Code": "15317"
+                        }
+                    ],
+                    "QualificationSummary": "To.",
+                    "PositionRemuneration": [
+                        {
+                            "MinimumRange": "103409.0",
+                            "MaximumRange": "134435.0",
+                            "RateIntervalCode": "PA",
+                            "Description": "Per Year"
+                        }
+                    ],
+                    "PositionStartDate": "2024-09-30T00:00:00.0000",
+                    "PositionEndDate": "2024-10-04T23:59:59.9970",
+                    "PublicationStartDate": "2024-09-30T00:00:00.0000",
+                    "ApplicationCloseDate": "2024-10-04T23:59:59.9970",
+                    "PositionFormattedDescription": [
+                        {
+                            "Label": "Dynamic Teaser",
+                            "LabelDescription": "Hit highlighting for keyword searches."
+                        }
+                    ],
+                    "UserArea": {
+                        "Details": {
+                            "JobSummary": "This position is located in the Office of Information Technology, Division of Health Information Technology, Division of Health Information Technology and Modernization & Operations (DHITMO). The incumbent will serve as an advisor to the management team in evaluating data, processes, and procedures to determine the effectiveness of the Indian Health Service Health Information Technology related to program operations, management, and organizational efficiency and productivity.",
+                            "WhoMayApply": {
+                                "Name": "",
+                                "Code": ""
+                            },
+                            "LowGrade": "13",
+                            "HighGrade": "13",
+                            "PromotionPotential": "None",
+                            "SubAgencyName": "Division of Health Information Technology Modernization & Operations",
+                            "OrganizationCodes": "HE/HE37",
+                            "Relocation": "False",
+                            "HiringPath": [
+                                "fed-transition",
+                                "public"
+                            ],
+                            "TotalOpenings": "Many",
+                            "AgencyMarketingStatement": "",
+                            "TravelCode": "1",
+                            "ApplyOnlineUrl": "https://apply.usastaffing.gov/Application/Apply",
+                            "DetailStatusUrl": "https://apply.usastaffing.gov/Application/ApplicationStatus",
+                            "MajorDuties": [
+                                "Electronic Health Record (EHR) ."
+                            ],
+                            "Education": "There are no education requirements.",
+                            "Requirements": "",
+                            "Evaluations": "",
+                            "HowToApply": "",
+                            "WhatToExpectNext": "",
+                            "RequiredDocuments": "",
+                            "Benefits": "",
+                            "BenefitsUrl": "https://www.usajobs.gov/Help/working-in-government/benefits/",
+                            "BenefitsDisplayDefaultText": true,
+                            "OtherInformation": "",
+                            "KeyRequirements": [],
+                            "WithinArea": "False",
+                            "CommuteDistance": "0",
+                            "ServiceType": "01",
+                            "AnnouncementClosingType": "03",
+                            "AnnouncementClosingTypeOption": "75",
+                            "AgencyContactEmail": "IHSCareerInquiry@ihs.gov",
+                            "SecurityClearance": "Other",
+                            "DrugTestRequired": "False",
+                            "PositionSensitivitiy": "High Risk (HR)",
+                            "AdjudicationType": [
+                                "Suitability/Fitness"
+                            ],
+                            "TeleworkEligible": false,
+                            "RemoteIndicator": true,
+                            "FinancialDisclosure": false,
+                            "BargainingUnitStatus": true
+                        },
+                        "IsRadialSearch": false
+                    }
+                },
+                "RelevanceRank": 0
+            },
+            {
+                "MatchedObjectId": "812001500",
+                "MatchedObjectDescriptor": {
+                    "PositionID": "24-BPA-42520-12562898-MP",
+                    "PositionTitle": "IT Specialist (APPSW)",
+                    "PositionURI": "https://www.usajobs.gov:443/GetJob/ViewDetails/812001500",
+                    "ApplyURI": [
+                        "https://www.usajobs.gov:443/GetJob/ViewDetails/812001500"
+                    ],
+                    "PositionLocationDisplay": "Anywhere in the U.S. (remote job)",
+                    "PositionLocation": [
+                        {
+                            "LocationName": "Anywhere in the U.S. (remote job), United States",
+                            "CountryCode": "United States",
+                            "CityName": "Anywhere in the U.S. (remote job), United States",
+                            "Longitude": 0,
+                            "Latitude": 0
+                        }
+                    ],
+                    "OrganizationName": "Bonneville Power Administration",
+                    "DepartmentName": "Department of Energy",
+                    "JobCategory": [
+                        {
+                            "Name": "Information Technology Management",
+                            "Code": "2210"
+                        }
+                    ],
+                    "JobGrade": [
+                        {
+                            "Code": "GS"
+                        }
+                    ],
+                    "PositionSchedule": [
+                        {
+                            "Name": "MUST be available to work between core working hours of 9:00 a.m. to 3:00 p.m. Pacific Time.",
+                            "Code": "1"
+                        }
+                    ],
+                    "PositionOfferingType": [
+                        {
+                            "Name": "",
+                            "Code": "15317"
+                        }
+                    ],
+                    "QualificationSummary": "",
+                    "PositionRemuneration": [
+                        {
+                            "MinimumRange": "72553.0",
+                            "MaximumRange": "117400.0",
+                            "RateIntervalCode": "PA",
+                            "Description": "Per Year"
+                        }
+                    ],
+                    "PositionStartDate": "2024-09-30T13:41:32.9130",
+                    "PositionEndDate": "2024-10-09T23:59:59.9970",
+                    "PublicationStartDate": "2024-09-30T13:41:32.9130",
+                    "ApplicationCloseDate": "2024-10-09T23:59:59.9970",
+                    "PositionFormattedDescription": [
+                        {
+                            "Label": "Dynamic Teaser",
+                            "LabelDescription": "Hit highlighting for keyword searches."
+                        }
+                    ],
+                    "UserArea": {
+                        "Details": {
+                            "JobSummary": "",
+                            "WhoMayApply": {
+                                "Name": "",
+                                "Code": ""
+                            },
+                            "LowGrade": "11",
+                            "HighGrade": "11",
+                            "PromotionPotential": "None",
+                            "OrganizationCodes": "DN/DN03",
+                            "Relocation": "False",
+                            "HiringPath": [
+                                "fed-transition",
+                                "fed-competitive",
+                                "disability",
+                                "land",
+                                "mspouse",
+                                "peace",
+                                "special-authorities",
+                                "vet"
+                            ],
+                            "TotalOpenings": "1",
+                            "AgencyMarketingStatement": "",
+                            "TravelCode": "1",
+                            "ApplyOnlineUrl": "https://apply.usastaffing.gov/Application/Apply",
+                            "DetailStatusUrl": "https://apply.usastaffing.gov/Application/ApplicationStatus",
+                            "MajorDuties": [
+                                "completeness."
+                            ],
+                            "Education": "",
+                            "Requirements": "",
+                            "Evaluations": "",
+                            "HowToApply": "",
+                            "WhatToExpectNext": "",
+                            "RequiredDocuments": "",
+                            "Benefits": "",
+                            "BenefitsUrl": "https://help.usajobs.gov/index.php/Pay_and_Benefits",
+                            "BenefitsDisplayDefaultText": true,
+                            "OtherInformation": "",
+                            "KeyRequirements": [],
+                            "WithinArea": "False",
+                            "CommuteDistance": "0",
+                            "ServiceType": "01",
+                            "AnnouncementClosingType": "03",
+                            "AnnouncementClosingTypeOption": "50",
+                            "AgencyContactEmail": "rlsmith@bpa.gov",
+                            "AgencyContactPhone": "971-666-2478",
+                            "SecurityClearance": "Not Required",
+                            "DrugTestRequired": "False",
+                            "PositionSensitivitiy": "Non-sensitive (NS)/Low Risk",
+                            "AdjudicationType": [
+                                "Credentialing",
+                                "Suitability/Fitness"
+                            ],
+                            "TeleworkEligible": false,
+                            "RemoteIndicator": true,
+                            "FinancialDisclosure": false,
+                            "BargainingUnitStatus": true
+                        },
+                        "IsRadialSearch": false
+                    }
+                },
+                "RelevanceRank": 0
+            }
+        ],
+        "UserArea": {
+            "NumberOfPages": "97",
+            "IsRadialSearch": false
+        }
+    }
+}
