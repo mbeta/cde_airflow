@@ -1,11 +1,11 @@
 import os
 import pandas as pd
-from request_api import fetch_all_pages
+from request_api import fetch_all_pages, fetch_organizations, fetch_job_categories
 from datetime import datetime
 
-def extract_data(keyword: str, output_parquet: str, date_posted: int = 0):
+def extract_data_jobs(keyword: str, output_parquet: str, date_posted: int = 0):
     """
-    ETAPA EXTRACT
+    ETAPA EXTRACT JOBS
     Extrae datos de la API de USAJobs y los guarda en formato Parquet.
 
     Arguments:
@@ -96,8 +96,112 @@ def extract_data(keyword: str, output_parquet: str, date_posted: int = 0):
     else:
         print("No se han recibido datos.")
         return None
+    
+    
+def extract_data_organization(lastmodified: str, output_parquet: str):
+    """
+    ETAPA EXTRACT
+    Extrae datos de Orgaizaciones de la API de USAJobs y los guarda en formato Parquet.
+
+    Arguments:
+    lastmodified : str : Filtro de fecha formato YYYY-MM-DD para ultimas modificaciones.
+    """
+    # Llamar a la función fetch_organizations para obtener los datos
+    data = fetch_organizations(lastmodified)
+    print(f"Cantidad de Registros: {data}")
+
+    if data:
+        # Crear una lista para almacenar los datos de la dimension de organizaciones
+        organizations = []
+        
+        for item in data:
+            code = item.get('Code',None)
+            value = item.get('Value',None)
+            parent_code = item.get('ParentCode',None)
+            last_modified = item.get('LastModified',None)
+            id_disabled = item.get('IsDisabled',None)
+            
+                      
+            organizations.append({
+                'Code': code,
+                'Value': value,
+                'ParentCode': parent_code,
+                'LastModified' : last_modified,
+                'IsDisabled': id_disabled
+            })
+
+        # Convertir la lista de resultados a un DataFrame de pandas
+        df = pd.DataFrame(organizations)
+
+        # Verificar si el directorio existe, si no, crearlo
+        if not os.path.exists(output_parquet):
+            os.makedirs(output_parquet)
+            
+        # Obtener la fecha actual y formatearla como YYYY-MM-DD
+        timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+
+        # Guardar los datos en un archivo Parquet con la fecha y hora en el nombre
+        path = os.path.join(output_parquet, f'{timestamp}_organizations_data.parquet')
+        df.to_parquet(path, index=False)
+        print(f"Datos extraídos y guardados en {path}")
+        return path
+    else:
+        print("No se han recibido datos.")
+        return None    
+
+def extract_data_job_categories(lastmodified: str, output_parquet: str):
+    """
+    ETAPA EXTRACT
+    Extrae datos de Categorias de la API de USAJobs y los guarda en formato Parquet.
+
+    Arguments:
+    lastmodified : str : Filtro de fecha formato YYYY-MM-DD para ultimas modificaciones.
+    """
+    # Llamar a la función fetch_job_categories para obtener los datos
+    data = fetch_job_categories(lastmodified)
+    
+    if data:
+        # Crear una lista para almacenar los datos de la dimension de categorias
+        job_categories = []
+        
+        for item in data:
+            code = item.get('Code',None)
+            value = item.get('Value',None)
+            job_family = item.get('JobFamily',None)
+            last_modified = item.get('LastModified',None)
+            id_disabled = item.get('IsDisabled',None)
+            
+                      
+            job_categories.append({
+                'Code': code,
+                'Value': value,
+                'JobFamily': job_family,
+                'LastModified' : last_modified,
+                'IsDisabled': id_disabled
+            })
+
+        # Convertir la lista de resultados a un DataFrame de pandas
+        df = pd.DataFrame(job_categories)
+
+        # Verificar si el directorio existe, si no, crearlo
+        if not os.path.exists(output_parquet):
+            os.makedirs(output_parquet)
+            
+        # Obtener la fecha actual y formatearla como YYYY-MM-DD
+        timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+
+        # Guardar los datos en un archivo Parquet con la fecha y hora en el nombre
+        path = os.path.join(output_parquet, f'{timestamp}_job_categories_data.parquet')
+        df.to_parquet(path, index=False)
+        print(f"Datos extraídos y guardados en {path}")
+        return path
+    else:
+        print("No se han recibido datos.")
+        return None    
 
 if __name__ == "__main__":
     # Prueba de uso
     output_directory = 'data_temp'
-    extract_data('Software', output_directory, date_posted=60)
+    #extract_data_jobs('Software', output_directory, date_posted=60)
+    #extract_data_organization('', output_directory)
+    extract_data_job_categories('', output_directory)
