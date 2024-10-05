@@ -128,6 +128,31 @@ def get_data_organization(lastmodified: str) -> dict:
     
     return None
 
+def get_data_position_types(lastmodified: str) -> dict:
+    """
+    Realiza una solicitud GET a la API de USAJobs para obtener Position Types.
+    https://developer.usajobs.gov/api-reference/get-codelist-positionofferingtypes
+    
+    Arguments:
+    lastmodified : str : Fecha de ultima modificacion, con la que solo devuelve registros que hayan sido modificados en esta fecha o posterior
+
+    Returns:
+    dict : Respuesta en formato JSON o None si hay un error.
+    """
+    url = f'https://data.usajobs.gov/api/codelist/positionofferingtypes?lastmodified={lastmodified}'
+    headers = build_headers()
+    
+    try:
+        response = requests.get(url, headers=headers, timeout=10)
+        response.raise_for_status()  # Lanza una excepción si el status_code no es 200
+        return response.json()
+    except requests.exceptions.Timeout: # Captura exceptions tipo Timeout
+        print("Error: La solicitud de PositionTypes ha superado el tiempo de espera.")
+    except requests.exceptions.RequestException as e: # Captura exceptions de Request
+        print(f"Error en la solicitud: {e}")
+    
+    return None
+
 
 def fetch_organizations(lastmodified: str):
     """
@@ -157,6 +182,22 @@ def fetch_job_categories(lastmodified: str):
     """
       
     response = get_data_jobs_categories(lastmodified)
+       
+    # Retorna resultado de solo  listado de categorias.
+    return response['CodeList'][0]['ValidValue']
+
+def fetch_position_types(lastmodified: str):
+    """
+    Obtiene todos los resultados de la API de Position Types.
+    
+    Arguments:
+    lastmodified : str : Fecha de ultima modificacion, con la que solo devuelve registros que hayan sido modificados en esta fecha o posterior
+
+    Returns:
+    list : Lista con todas las Tipos de posiciones ofrecidas resultantes en JSON.
+    """
+      
+    response = get_data_position_types(lastmodified)
        
     # Retorna resultado de solo  listado de categorias.
     return response['CodeList'][0]['ValidValue']

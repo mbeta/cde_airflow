@@ -1,6 +1,6 @@
 import os
 import pandas as pd
-from request_api import fetch_all_pages, fetch_organizations, fetch_job_categories
+from request_api import fetch_all_pages, fetch_organizations, fetch_job_categories, fetch_position_types
 from datetime import datetime
 
 def extract_data_jobs(keyword: str, output_parquet: str, date_posted: int = 0):
@@ -22,21 +22,17 @@ def extract_data_jobs(keyword: str, output_parquet: str, date_posted: int = 0):
         
         for item in data:
             matched_descriptor = item['MatchedObjectDescriptor']
-            matched_object_id = item['MatchedObjectId']
-            
             # Extraemos data de la descripción del item
             position_id = matched_descriptor['PositionID']
+            matched_object_id = item['MatchedObjectId']
             position_title = matched_descriptor['PositionTitle']
+            
+            # Posterior relacion con dimension Organizations
             organization_name = matched_descriptor['OrganizationName']
             department_name = matched_descriptor['DepartmentName']
-            location = matched_descriptor['PositionLocation'][0] if matched_descriptor.get('PositionLocation') else {}
-            location_name = location.get('LocationName')
-            country_code = location.get('CountryCode')
-            city_name = location.get('CityName')
-            longitude = location.get('Longitude')
-            latitude = location.get('Latitude')
+            location_display = matched_descriptor['PositionLocationDisplay']
             
-
+            #Informacion de fechas de la publicación
             publication_start_date = matched_descriptor.get('PublicationStartDate', None)
             application_close_date = matched_descriptor.get('ApplicationCloseDate', None)
             position_start_date = matched_descriptor.get('PositionStartDate', None)
@@ -45,39 +41,41 @@ def extract_data_jobs(keyword: str, output_parquet: str, date_posted: int = 0):
             position_remuneration = matched_descriptor['PositionRemuneration'][0] if matched_descriptor.get('PositionRemuneration') else {}
             min_salary = position_remuneration.get('MinimumRange', None)
             max_salary = position_remuneration.get('MaximumRange', None)
-            rate_interval_code = position_remuneration.get('RateIntervalCode', None)
+            rate_interval_description = position_remuneration.get('Description', None)
             
-            user_area = matched_descriptor['UserArea']
-            total_openings = user_area.get('Details', None).get('TotalOpenings', None)
             
-
-            job_category = matched_descriptor['JobCategory'][0] if matched_descriptor.get('JobCategory') else {}
-            job_category_name = job_category.get('Name')
-            job_category_code = job_category.get('Code')
-
-            jobs.append({
-                'MatchedObjectId': matched_object_id,
-                'PositionID': position_id,
-                'PositionTitle': position_title,
-                'OrganizationName': organization_name,
-                'DepartmentName' : department_name,
-                'LocationName': location_name,
-                'CountryCode': country_code,
-                'CityName': city_name,
-                'Longitude': longitude,
-                'Latitude': latitude,
-                'MinSalary': min_salary,
-                'MaxSalary': max_salary,
-                'RateIntervalCode' : rate_interval_code,
-                'PublicationStartDate' : publication_start_date,
-                'ApplicationCloseDate' : application_close_date,
-                'PositionStartDate': position_start_date,
-                'PositionEndDate': position_end_date,
-                'TotalOpenings' : total_openings,
-                'JobCategoryName': job_category_name,
-                'JobCategoryCode': job_category_code
-            })
-
+            #Pueden presentarse mas de una categoria por posteo
+            job_categories = matched_descriptor.get('JobCategory')
+            
+            # Creo un registro por cada categoria encontrada
+            for job_category in job_categories:
+                job_category_code = job_category.get('Code')
+                
+                position_types = matched_descriptor['PositionOfferingType']
+                #Creo registros por cada combinacion de tipos 
+                for position_type in position_types:
+                    position_type_code = position_type.get('Code', None)
+                    position_type_detail = position_type.get('Name', None)
+                
+                    jobs.append({
+                    'MatchedObjectId': matched_object_id,
+                    'PositionID': position_id,
+                    'PositionTitle': position_title,
+                    'OrganizationName': organization_name,
+                    'DepartmentName' : department_name,
+                    'JobCategoryCode': job_category_code,
+                    'PositionLocationDisplay': location_display,
+                    'PositionStartDate': position_start_date,
+                    'PositionEndDate': position_end_date,
+                    'PublicationStartDate' : publication_start_date,
+                    'ApplicationCloseDate' : application_close_date,
+                    'MinSalary': min_salary,
+                    'MaxSalary': max_salary,
+                    'RateIntervalDescription' : rate_interval_description,
+                    'PositionTypeCode': position_type_code,
+                    'DetailPositionType': position_type_detail
+                    })
+        
         # Convertir la lista de resultados a un DataFrame de pandas
         df = pd.DataFrame(jobs)
 
@@ -100,7 +98,7 @@ def extract_data_jobs(keyword: str, output_parquet: str, date_posted: int = 0):
     
 def extract_data_organization(lastmodified: str, output_parquet: str):
     """
-    ETAPA EXTRACT
+    ETAPA EXTRACT - Dimensión ORGANIZATION
     Extrae datos de Orgaizaciones de la API de USAJobs y los guarda en formato Parquet.
 
     Arguments:
@@ -151,7 +149,7 @@ def extract_data_organization(lastmodified: str, output_parquet: str):
 
 def extract_data_job_categories(lastmodified: str, output_parquet: str):
     """
-    ETAPA EXTRACT
+    ETAPA EXTRACT - Dimensión JOB CATEGORY
     Extrae datos de Categorias de la API de USAJobs y los guarda en formato Parquet.
 
     Arguments:
@@ -198,10 +196,59 @@ def extract_data_job_categories(lastmodified: str, output_parquet: str):
     else:
         print("No se han recibido datos.")
         return None    
+    
+def extract_data_position_type(lastmodified: str, output_parquet: str):
+    """
+    ETAPA EXTRACT - Dimensión POSITION TYPE
+    Extrae datos de los tipos de posiciones de la API de USAJobs y los guarda en formato Parquet.
+
+    Arguments:
+    lastmodified : str : Filtro de fecha formato YYYY-MM-DD para ultimas modificaciones.
+    """
+    # Llamar a la función fetch_position_types para obtener los datos
+    data = fetch_position_types(lastmodified)
+    
+    if data:
+        # Crear una lista para almacenar los datos de la dimension de tipos de posiciones
+        position_types = []
+        
+        for item in data:
+            code = item.get('Code',None)
+            value = item.get('Value',None)
+            last_modified = item.get('LastModified',None)
+            id_disabled = item.get('IsDisabled',None)
+            
+                      
+            position_types.append({
+                'Code': code,
+                'Value': value,
+                'LastModified' : last_modified,
+                'IsDisabled': id_disabled
+            })
+
+        # Convertir la lista de resultados a un DataFrame de pandas
+        df = pd.DataFrame(position_types)
+
+        # Verificar si el directorio existe, si no, crearlo
+        if not os.path.exists(output_parquet):
+            os.makedirs(output_parquet)
+            
+        # Obtener la fecha actual y formatearla como YYYY-MM-DD
+        timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+
+        # Guardar los datos en un archivo Parquet con la fecha y hora en el nombre
+        path = os.path.join(output_parquet, f'{timestamp}_position_types_data.parquet')
+        df.to_parquet(path, index=False)
+        print(f"Datos extraídos y guardados en {path}")
+        return path
+    else:
+        print("No se han recibido datos.")
+        return None    
 
 if __name__ == "__main__":
     # Prueba de uso
     output_directory = 'data_temp'
     #extract_data_jobs('Software', output_directory, date_posted=60)
     #extract_data_organization('', output_directory)
-    extract_data_job_categories('', output_directory)
+    #extract_data_job_categories('', output_directory)
+    extract_data_position_type('', output_directory)
