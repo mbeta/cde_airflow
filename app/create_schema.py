@@ -80,5 +80,39 @@ def create_all_tables():
     for table_name, create_sql in tables.items():
         create_table(table_name, create_sql)
 
+def drop_schema():
+    """
+    Se eliminan toda las tablas del schema.
+    
+    Arguments:-
+    Returns: -
+    """
+    schema = f'{os.getenv("REDSHIFT_SCHEMA")}'
+    get_tables_sql = f"""
+        SELECT table_name 
+        FROM information_schema.tables 
+        WHERE table_schema = '{schema}';
+    """
+    print(get_tables_sql)
+    conn = get_redshift_connection()
+    try:
+        result = conn.execute(get_tables_sql)
+        tables = result.fetchall()
+    
+        if not tables:
+            print(f"No hay tablas en el esquema '{schema}'.")
+            return
+
+        # Eliminar cada tabla
+        for table in tables:
+            drop_table_sql = f"DROP TABLE IF EXISTS \"{schema}\".{table[0]} CASCADE;"
+            print(drop_table_sql)
+            conn.execute(drop_table_sql)
+            print(f"Tabla '{table[0]}' eliminada exitosamente.")
+
+    finally:
+        conn.close()
+
 if __name__ == "__main__":
     create_all_tables()
+    #drop_schema()
