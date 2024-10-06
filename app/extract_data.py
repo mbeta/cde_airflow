@@ -3,7 +3,7 @@ import pandas as pd
 from request_api import fetch_all_pages, fetch_organizations, fetch_job_categories, fetch_position_types
 from datetime import datetime
 
-def extract_data_jobs(keyword: str, output_parquet: str, date_posted: int = 0):
+def extract_data_jobs(keyword: str, output_parquet: str, date_posted: int = 0, date_control: datetime = None):
     """
     ETAPA EXTRACT JOBS
     Extrae datos de la API de USAJobs y los guarda en formato Parquet.
@@ -12,6 +12,7 @@ def extract_data_jobs(keyword: str, output_parquet: str, date_posted: int = 0):
     keyword : str : Palabra clave para la búsqueda de trabajos.
     output_parquet : str : Directorio donde se guardará el archivo Parquet.
     date_posted : int : Días desde que se publicó la oferta (0 para hoy, 60 para el máximo histórico).
+    date_control: Fecha limite de control, para evitar procesar dias incompletos.
     """
     # Llamar a la función fetch_all_pages para obtener los datos
     data = fetch_all_pages(keyword, date_posted)
@@ -19,9 +20,22 @@ def extract_data_jobs(keyword: str, output_parquet: str, date_posted: int = 0):
     if data:
         # Crear una lista para almacenar los datos de los trabajos
         jobs = []
-        
+        print(f"Cantidad de registros a procesar: {len(data)}")
         for item in data:
             matched_descriptor = item['MatchedObjectDescriptor']
+            
+            
+            #Control de fecha
+            publication_start_date = matched_descriptor.get('PublicationStartDate', None)
+            # Verificar que la fecha de publicación exista y convertirla a un objeto datetime
+            if publication_start_date:
+                publication_start_date_control = datetime.strptime(publication_start_date.split('T')[0], '%Y-%m-%d').date()
+                print(publication_start_date_control)
+                print(date_control)
+                # Si la fecha es igual a la de date_control, ignorar este registro
+                if publication_start_date_control >= date_control:
+                    continue
+    
             # Extraemos data de la descripción del item
             position_id = matched_descriptor['PositionID']
             matched_object_id = item['MatchedObjectId']
@@ -106,7 +120,7 @@ def extract_data_organization(lastmodified: str, output_parquet: str):
     """
     # Llamar a la función fetch_organizations para obtener los datos
     data = fetch_organizations(lastmodified)
-    print(f"Cantidad de Registros: {data}")
+    print(f"Cantidad de Registros: {len(data)}")
 
     if data:
         # Crear una lista para almacenar los datos de la dimension de organizaciones
@@ -248,7 +262,8 @@ def extract_data_position_type(lastmodified: str, output_parquet: str):
 if __name__ == "__main__":
     # Prueba de uso
     output_directory = 'data_temp'
-    #extract_data_jobs('Software', output_directory, date_posted=60)
+    
     #extract_data_organization('', output_directory)
     #extract_data_job_categories('', output_directory)
-    extract_data_position_type('', output_directory)
+    #extract_data_position_type('', output_directory)
+    extract_data_jobs('Software', output_directory, date_posted=1, date_control=datetime(2024, 10, 6).date())
