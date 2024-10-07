@@ -112,6 +112,43 @@ def drop_schema():
 
     finally:
         conn.close()
+        
+def get_organization_codes_by_names(names):
+    """
+    Obtiene los códigos de organización basados en una lista de nombres.
+    
+    Arguments:
+    names : list : Lista de nombres de organizaciones a buscar.
+    
+    Returns:
+    dict : Un diccionario con los nombres como claves y sus respectivos códigos como valores.
+    """
+    conn = get_redshift_connection()
+    schema = f'"{os.getenv("REDSHIFT_SCHEMA")}"'
+    
+    try:
+        # construimos query
+        names_placeholder = ', '.join([f"'{name}'" for name in names])  # Lista con comillas
+       
+       
+        query = f"""
+            SELECT code, name
+            FROM {schema}.dim_organization
+            WHERE name IN ({names_placeholder})
+        """
+        
+        # Ejecutamos la consulta
+        result = conn.execute(query)
+        
+        # Mapeamos los resultados en un diccionario
+        organization_map = {row['name']: row['code'] for row in result}
+    
+    finally:
+        conn.close()
+
+    return organization_map
+
+
 
 if __name__ == "__main__":
     create_all_tables()
