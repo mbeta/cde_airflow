@@ -1,15 +1,12 @@
 import pandas as pd
 from datetime import datetime
+from db_services import get_organization_codes_by_names
 
-def transform_jobs_data(parquet_file: str):
+def transform_data_jobs(parquet_file: str):
     """
     ETAPA TRANSFORM
     Transforma los datos de un archivo Parquet a un formato adecuado para el modelo de datos.
     Tabla de Hechos: FactJobPostings
-    Dimensiones: 
-    - DimLocation
-    - DimOrganization
-    - DimJobCategory
     
     Arguments:
     parquet_file : str : Ruta del archivo Parquet a transformar.
@@ -22,53 +19,39 @@ def transform_jobs_data(parquet_file: str):
     df = pd.read_parquet(parquet_file)
     print("Columnas en el DataFrame:", df.columns.tolist())
     
+    #Buscamos los codigos de organization que necesitaremos
+    unique_organization_names = df['OrganizationName'].unique().tolist()
+    unique_department_names = df['DepartmentName'].unique().tolist()
+    
+    # Buscar los códigos en la tabla dim_organization
+    all_names = unique_organization_names + unique_department_names
+    organization_map = get_organization_codes_by_names(all_names)
+    
    # Preparar la tabla de hechos: FactJobPostings
     fact_job_postings = pd.DataFrame({
-        'JobPostingID': df['MatchedObjectId'],
-        'PositionID': df['PositionID'],
-        'MatchedObjectId': df['MatchedObjectId'],
-        'LocationID': None,  # Placeholder para el ID de ubicación
-        'OrganizationID': None,  # Placeholder para el ID de organización
-        'JobCategoryID': None,  # Placeholder para el ID de categoría de trabajo
-        'PositionStartDate': pd.to_datetime(df['PositionStartDate']),
-        'PositionEndDate': pd.to_datetime(df['PositionEndDate']),
-        'PublicationStartDate': pd.to_datetime(df['PublicationStartDate']),
-        'ApplicationCloseDate': pd.to_datetime(df['ApplicationCloseDate']),
-        'MinimumRange': df['MinSalary'],
-        'MaximumRange': df['MaxSalary'],
-        'RateIntervalCode': df['RateIntervalCode'],
-        'TotalOpenings': df['TotalOpenings'],
-        'VersionDate': datetime.now(),
-        'IsReposted': 0,  # Asignar 0 o 1 según la lógica de reposteo
-        'Duration': (pd.to_datetime(df['PositionEndDate']) - pd.to_datetime(df['PositionStartDate'])).dt.days
+        'object_id': df['MatchedObjectId'],
+        'position_id': df['PositionID'],
+        'position_title': df['PositionTitle'],
+        'location_description': df['PositionLocationDisplay'],
+        'organization_code': df['OrganizationName'].map(organization_map),  # Buscamos code segun OrganizationName
+        'department_code': df['DepartmentName'].map(organization_map), # Buscamos code segun DepartmentName
+        'job_category_code':df['JobCategoryCode'],
+        'position_start_date': pd.to_datetime(df['PositionStartDate'], errors='coerce'),
+        'position_end_date': pd.to_datetime(df['PositionEndDate'], errors='coerce'),
+        'publication_start_date': pd.to_datetime(df['PublicationStartDate'], errors='coerce'),
+        'application_close_date': pd.to_datetime(df['ApplicationCloseDate'], errors='coerce'),
+        'minimum_salary': df['MinSalary'].astype(float),
+        'maximum_salary': df['MaxSalary'].astype(float),
+        'rate_interval_description': df['RateIntervalDescription'],
+        'position_type_code': df['PositionTypeCode'],
+        'detail_position_type': df['DetailPositionType'],
+        'version_date': datetime.now(),
+        'duration': (pd.to_datetime(df['PositionEndDate'], errors='coerce') - 
+                     pd.to_datetime(df['PositionStartDate'], errors='coerce')).dt.days
     })
 
-    # Preparar la dimensión: DimLocation
-    dim_location = df[['LocationName', 'CountryCode', 'CityName', 'Longitude', 'Latitude']].drop_duplicates().reset_index(drop=True)
-    dim_location['LocationID'] = dim_location.index + 1  # Generar ID para ubicación
-    dim_location = dim_location[['LocationID', 'LocationName', 'CountryCode', 'CityName', 'Longitude', 'Latitude']]
-
-    # Preparar la dimensión: DimOrganization
-    dim_organization = df[['OrganizationName', 'DepartmentName']].drop_duplicates().reset_index(drop=True)
-    dim_organization['OrganizationID'] = dim_organization.index + 1  # Generar ID para organización
-    dim_organization = dim_organization[['OrganizationID', 'OrganizationName', 'DepartmentName']]
-
-    # Preparar la dimensión: DimJobCategory
-    dim_job_category = df[['JobCategoryName', 'JobCategoryCode']].drop_duplicates().reset_index(drop=True)
-    dim_job_category['JobCategoryID'] = dim_job_category.index + 1  # Generar ID para categoría de trabajo
-    dim_job_category = dim_job_category[['JobCategoryID', 'JobCategoryName', 'JobCategoryCode']]
-
-    # Mapear IDs en la tabla de hechos
-    fact_job_postings['LocationID'] = fact_job_postings['LocationID'].map(dim_location.set_index('LocationName')['LocationID'])
-    fact_job_postings['OrganizationID'] = fact_job_postings['OrganizationID'].map(dim_organization.set_index('OrganizationName')['OrganizationID'])
-    fact_job_postings['JobCategoryID'] = fact_job_postings['JobCategoryID'].map(dim_job_category.set_index('JobCategoryName')['JobCategoryID'])
-
-    return {
-        'fact_job_postings': fact_job_postings,
-        'dim_location': dim_location,
-        'dim_organization': dim_organization,
-        'dim_job_category': dim_job_category
-    }
+   
+    return fact_job_postings
     
 def transform_data_organization(parquet_file: str):
     """
@@ -89,11 +72,11 @@ def transform_data_organization(parquet_file: str):
     
    # Preparar la tabla de hechos: FactJobPostings
     dim_organization_postings = pd.DataFrame({
-        'Code': df['Code'],
-        'Name': df['Value'],
-        'ParentCode': df['ParentCode'],
-        'LastModified': df['LastModified'],  
-        'IsDisabled': df['IsDisabled'],  
+        'code': df['Code'],
+        'name': df['Value'],
+        'parent_code': df['ParentCode'],
+        'last_modified': df['LastModified'],  
+        'is_disabled': df['IsDisabled'],  
     })
 
     return  dim_organization_postings
@@ -117,14 +100,41 @@ def transform_data_category(parquet_file: str):
     
    # Preparar la tabla de hechos: FactJobPostings
     dim_job_category_postings = pd.DataFrame({
-        'Code': df['Code'],
-        'Name': df['Value'],
-        'JobFamily': df['JobFamily'],
-        'LastModified': df['LastModified'],  
-        'IsDisabled': df['IsDisabled'],  
+        'code': df['Code'],
+        'name': df['Value'],
+        'job_family': df['JobFamily'],
+        'last_modified': df['LastModified'],  
+        'is_disabled': df['IsDisabled'],  
     })
 
     return  dim_job_category_postings    
+
+def transform_data_position_types(parquet_file: str):
+    """
+    ETAPA TRANSFORM - Dimension POSITION TYPE
+    Transforma los datos de un archivo Parquet a un formato adecuado para el modelo de datos.
+    Tabla de Dimension: DimPositionType
+     
+    Arguments:
+    parquet_file : str : Ruta del archivo Parquet a transformar.
+    
+    Returns:
+    dict : Un diccionario con DataFrames para la tabla de dimension.
+    """
+    
+    # Leer el archivo Parquet
+    df = pd.read_parquet(parquet_file)
+    print("Columnas en el DataFrame:", df.columns.tolist())
+    
+   # Preparar la tabla de hechos: FactJobPostings
+    dim_job_position_types_postings = pd.DataFrame({
+        'code': df['Code'],
+        'name': df['Value'],
+        'last_modified': df['LastModified'],  
+        'is_disabled': df['IsDisabled'],  
+    })
+
+    return  dim_job_position_types_postings    
 
 
 if __name__ == "__main__":
