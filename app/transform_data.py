@@ -36,17 +36,18 @@ def transform_data_jobs(parquet_file: str):
         'organization_code': df['OrganizationName'].map(organization_map),  # Buscamos code segun OrganizationName
         'department_code': df['DepartmentName'].map(organization_map), # Buscamos code segun DepartmentName
         'job_category_code':df['JobCategoryCode'],
-        'position_start_date': pd.to_datetime(df['PositionStartDate']),
-        'position_end_date': pd.to_datetime(df['PositionEndDate']),
-        'publication_start_date': pd.to_datetime(df['PublicationStartDate']),
-        'application_close_date': pd.to_datetime(df['ApplicationCloseDate']),
-        'minimum_salary': df['MinSalary'],
-        'maximum_salary': df['MaxSalary'],
+        'position_start_date': pd.to_datetime(df['PositionStartDate'], errors='coerce'),
+        'position_end_date': pd.to_datetime(df['PositionEndDate'], errors='coerce'),
+        'publication_start_date': pd.to_datetime(df['PublicationStartDate'], errors='coerce'),
+        'application_close_date': pd.to_datetime(df['ApplicationCloseDate'], errors='coerce'),
+        'minimum_salary': df['MinSalary'].astype(float),
+        'maximum_salary': df['MaxSalary'].astype(float),
         'rate_interval_description': df['RateIntervalDescription'],
         'position_type_code': df['PositionTypeCode'],
         'detail_position_type': df['DetailPositionType'],
         'version_date': datetime.now(),
-        'duration': (pd.to_datetime(df['PositionEndDate']) - pd.to_datetime(df['PositionStartDate'])).dt.days
+        'duration': (pd.to_datetime(df['PositionEndDate'], errors='coerce') - 
+                     pd.to_datetime(df['PositionStartDate'], errors='coerce')).dt.days
     })
 
    

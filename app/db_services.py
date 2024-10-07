@@ -46,6 +46,7 @@ def create_all_tables():
                 position_type_code VARCHAR(10),
                 detail_position_type VARCHAR(255),
                 version_date TIMESTAMP,
+                is_reposted NUMERIC,
                 duration NUMERIC
             );
         """,

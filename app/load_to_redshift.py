@@ -8,77 +8,112 @@ from db_services import get_redshift_connection
 
 load_dotenv()
 
-def get_redshift_table_schema(engine, schema, table_name):
-    with engine.connect() as connection:
-        query = f"""
-        SELECT column_name, data_type
-        FROM information_schema.columns
-        WHERE table_schema = '{schema}' AND table_name = '{table_name}';
-        """
-        return pd.read_sql(query, connection.execution_options(autocommit=True))
-
-type_mapping = {
-    'int64': 'integer',
-    'float64': 'double precision',
-    'object': 'varchar',
-    'datetime64[ns]': 'timestamp',
-    'bool': 'boolean'
-}
-
 def load_jobs_redshift(df: pd.DataFrame):
+    """
+    Carga los datos en Redshift con la lógica de UPSERT (actualizar si existe, insertar si no).
+    Tabla: JOBS
+    
+    Arguments:
+    df : pd.DataFrame : El DataFrame con los datos a cargar.
+    """
+    
+    print("Se inicia Proceso de UPSERT para la tabla JOBS")
     # Crear la conexión a Redshift
     redshift_conn_string = os.getenv('REDSHIFT_CONN_STRING')
-    schema = os.getenv('REDSHIFT_SCHEMA')
+    schema = f'"{os.getenv('REDSHIFT_SCHEMA')}"'
     engine = create_engine(redshift_conn_string)
 
-    try:
-        # Asegurarse de que el DataFrame tiene las columnas correctas
-        expected_columns = [
-            'object_id', 'position_id', 'position_title', 
-            'location_description', 'organization_code', 
-            'department_code', 'job_category_code', 
-            'position_start_date', 'position_end_date', 
-            'publication_start_date', 'application_close_date', 
-            'minimum_salary', 'maximum_salary', 
-            'rate_interval_description', 'position_type_code', 
-            'detail_position_type', 'version_date', 'duration'
-        ]
+    # Listas para almacenar los datos de actualización e inserción
+    update_queries = []
+    insert_queries = []
+    
+        # expected_columns = [
+        #     'object_id', 'position_id', 'position_title', 
+        #     'location_description', 'organization_code', 
+        #     'department_code', 'job_category_code', 
+        #     'position_start_date', 'position_end_date', 
+        #     'publication_start_date', 'application_close_date', 
+        #     'minimum_salary', 'maximum_salary', 
+        #     'rate_interval_description', 'position_type_code', 
+        #     'detail_position_type', 'version_date', 'is_reposted', 'duration'
+        # ]
         
-        if not all(col in df.columns for col in expected_columns):
-            raise ValueError("El DataFrame no contiene todas las columnas necesarias.")
+     # Iniciar la conexión y transacción
+    with engine.connect() as conn:
+        for _, row in df.iterrows():
+            object_id = row['object_id']
+            position_id = row['position_id']
+            position_title = row['position_title']
+            location_description = row['location_description']
+            organization_code = row['organization_code']
+            department_code = row['department_code']
+            job_category_code = row['job_category_code']
+            position_start_date = row['position_start_date']
+            position_end_date = row['position_end_date']
+            publication_start_date = row['publication_start_date']
+            application_close_date = row['application_close_date']
+            minimum_salary = row['minimum_salary']
+            maximum_salary = row['maximum_salary']
+            rate_interval_description = row['rate_interval_description']
+            position_type_code = row['position_type_code']
+            detail_position_type = row['detail_position_type']
+            version_date = row['version_date']
+            is_reposted = 0
+            duration = row['duration']
+
+            # Verificar si el registro ya existe en la tabla Jobs
+            query_check = f"SELECT COUNT(*) FROM {schema}.jobs WHERE object_id = %s"
+            result = conn.execute(query_check, (object_id)).scalar()
+
+            if result > 0:
+                # Si el registro existe, agregar un UPDATE a la lista
+                is_reposted = 1
+                update_queries.append((
+                    position_id, position_title, location_description,
+                    organization_code, department_code, job_category_code, position_start_date,
+                    position_end_date, publication_start_date, application_close_date,
+                    minimum_salary, maximum_salary, rate_interval_description, position_type_code,
+                    detail_position_type, version_date, is_reposted, duration, object_id))
+            else:
+               # Si el registro no existe, agregar un INSERT a la lista
+                insert_queries.append((
+                    object_id, position_id, position_title, location_description,
+                    organization_code, department_code, job_category_code, position_start_date,
+                    position_end_date, publication_start_date, application_close_date,
+                    minimum_salary, maximum_salary, rate_interval_description, position_type_code,
+                    detail_position_type, version_date, is_reposted, duration))
+                
         
-        # Probar la conexión
-        with engine.connect() as connection:
-            result = connection.execute("SELECT 1")
-            print("Conexión exitosa a Redshift.")
+        # Ejecutar todas las actualizaciones en una sola operación
+        if update_queries:
+            query_update = f"""
+                UPDATE {schema}.jobs
+                SET position_id  = %s, position_title = %s, location_description = %s,
+                    organization_code = %s, department_code = %s, job_category_code = %s, position_start_date = %s,
+                    position_end_date = %s, publication_start_date = %s, application_close_date = %s,
+                    minimum_salary = %s, maximum_salary = %s, rate_interval_description = %s, position_type_code = %s,
+                    detail_position_type = %s, version_date = %s, is_reposted = %s, duration = %s
+                WHERE object_id = %s
+            """
+            conn.execute(query_update, update_queries)
 
-            # Obtener el esquema de la tabla de Redshift
-            redshift_schema = get_redshift_table_schema(engine, schema, 'jobs')
-            # Verificar los tipos de datos
-            for column in df.columns:
-                if column in redshift_schema['column_name'].values:
-                    redshift_type = redshift_schema[redshift_schema['column_name'] == column]['data_type'].values[0]
-                    pandas_type = str(df[column].dtype)
+            print(f"{len(update_queries)} registros actualizados.")
 
-                    # Mapeo de tipos de pandas a Redshift
-                    if pandas_type not in type_mapping:
-                        raise TypeError(f"Tipo de datos {pandas_type} no es compatible con Redshift.")
-                    
-                    expected_redshift_type = type_mapping[pandas_type]
-                    if expected_redshift_type != redshift_type:
-                        raise TypeError(f"Columna '{column}': Tipo de datos esperado en Redshift es '{redshift_type}', pero el DataFrame tiene '{pandas_type}'.")
+        # Ejecutar todos los inserts en una sola operación
+        if insert_queries:
+            query_insert = f"""
+                INSERT INTO {schema}.jobs (object_id, position_id, position_title, location_description,
+                    organization_code, department_code, job_category_code, position_start_date,
+                    position_end_date, publication_start_date, application_close_date,
+                    minimum_salary, maximum_salary, rate_interval_description, position_type_code,
+                    detail_position_type, version_date, is_reposted, duration)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """
+            conn.execute(query_insert, insert_queries)
 
-            # Cargar el DataFrame en Redshift
-            df.to_sql('jobs', con=engine, schema=schema, if_exists='append', index=False)
-
-            print("Datos insertados exitosamente en Redshift.")
-
-    except SQLAlchemyError as e:
-        print(f"Error al insertar en Redshift: {e}")
-    except Exception as e:
-        print(f"Error inesperado: {e}")
-    finally:
-        engine.dispose()  # Asegurarte de cerrar la conexión
+            print(f"{len(insert_queries)} registros insertados.")
+    
+    print("Proceso de UPSERT para la tabla JOBS completado.")
 
 # def load_jobs_redshift(df: pd.DataFrame):
 #     # Crear la conexión a Redshift
@@ -193,7 +228,7 @@ def load_organization_redshift(df: pd.DataFrame):
     update_queries = []
     insert_queries = []
     
-      # Iniciar la conexión y transacción
+    # Iniciar la conexión y transacción
     with engine.connect() as conn:
         for _, row in df.iterrows():
             code = row['code']

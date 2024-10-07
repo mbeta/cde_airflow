@@ -37,4 +37,4 @@ if __name__ == "__main__":
     jobs_df = transform_data_jobs(parquet_file)
     print(jobs_df.head())
     # Cargar los datos en Redshift
-    load_jobs_redshift(jobs_df.head())
+    load_jobs_redshift(jobs_df)
