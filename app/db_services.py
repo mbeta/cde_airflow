@@ -130,8 +130,6 @@ def get_organization_codes_by_names(names):
     try:
         # construimos query
         names_placeholder = ', '.join([f"'{name}'" for name in names])  # Lista con comillas
-       
-       
         query = f"""
             SELECT code, name
             FROM {schema}.dim_organization
@@ -146,11 +144,4 @@ def get_organization_codes_by_names(names):
     
     finally:
         conn.close()
-
     return organization_map
-
-
-
-if __name__ == "__main__":
-    create_all_tables()
-    #drop_schema()

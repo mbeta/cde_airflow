@@ -1,6 +1,6 @@
 import os
 import pandas as pd
-from request_api import fetch_all_pages, fetch_organizations, fetch_job_categories, fetch_position_types
+from app.request_api import fetch_all_pages, fetch_organizations, fetch_job_categories, fetch_position_types
 from datetime import datetime
 
 def extract_data_jobs(keyword: str, output_parquet: str, date_posted: int = 0, date_control: datetime = None):
@@ -33,7 +33,7 @@ def extract_data_jobs(keyword: str, output_parquet: str, date_posted: int = 0, d
                 print(publication_start_date_control)
                 print(date_control)
                 # Si la fecha es igual a la de date_control, ignorar este registro
-                if publication_start_date_control >= date_control:
+                if date_control and publication_start_date_control >= date_control:
                     continue
     
             # Extraemos data de la descripción del item

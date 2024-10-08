@@ -1,6 +1,6 @@
 import pandas as pd
 from datetime import datetime
-from db_services import get_organization_codes_by_names
+from app.db_services import get_organization_codes_by_names
 
 def transform_data_jobs(parquet_file: str):
     """
@@ -136,23 +136,3 @@ def transform_data_position_types(parquet_file: str):
 
     return  dim_job_position_types_postings    
 
-
-if __name__ == "__main__":
-    # Probar el script con un archivo Parquet
-    #parquet_file = 'data_temp/2024-09-30_19-53-35_jobs_data.parquet'
-    #transformed_data = transform_jobs_data(parquet_file)
-    
-    # Visualizar las primeras filas de cada DataFrame
-    #for table_name, df in transformed_data.items():
-    #    print(f"\nTabla {table_name} (primeras 5 filas):\n", df.head())
-        
-    #Pruebas con dimension organization
-    #parquet_file = 'data_temp/2024-10-02_10-27-53_organizations_data.parquet'
-    #dim_organization_df = transform_data_organization(parquet_file)
-    
-    #Pruebas con dimension job category
-    parquet_file = 'data_temp/2024-10-02_11-01-11_job_categories_data.parquet'
-    dim_organization_df = transform_data_category(parquet_file)
-    
-    # Imprimir el DataFrame transformado para verificar los resultados
-    print(dim_organization_df.head())

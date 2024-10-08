@@ -3,7 +3,7 @@ from sqlalchemy import create_engine, Table, MetaData, insert
 from sqlalchemy.exc import SQLAlchemyError
 import os
 from dotenv import load_dotenv
-from db_services import get_redshift_connection
+from app.db_services import get_redshift_connection
 
 
 load_dotenv()
