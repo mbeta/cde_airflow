@@ -10,10 +10,12 @@ from app.transform_data import (
 
 # Mock de los datos que regresarían de get_organization_codes_by_names
 organization_map = {
-    'U.S. Army Military Surface Deployment and Distribution Command': 'ORG1',
-    'Department of the Army': 'DEP1',
-    'Air Force Materiel Command': 'ORG2',
-    'Department of the Air Force': 'DEP2',
+    'U.S. Army Military Surface Deployment and Distribution Command': 'ARXT',
+    'Department of the Army': 'AR',
+    'Air Force Materiel Command': 'AF1M',
+    'Department of the Air Force': 'AF00',
+    'Goddard Space Flight Center': 'NN51',
+    'National Aeronautics and Space Administration': 'NN00'
 }
 
 # Datos de entrada de ejemplo para los tests
