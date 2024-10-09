@@ -1,0 +1,202 @@
+{
+    "CodeList": [
+        {
+            "ValidValue": [
+                {
+                    "Code": "AF2Z",
+                    "Value": "Air Force Medical",
+                    "ParentCode": "AF",
+                    "Acronym": "",
+                    "LastModified": "2024-07-19T14:34:10.813",
+                    "IsDisabled": "No"
+                },
+                {
+                    "Code": "ARCB",
+                    "Value": "United States Army Criminal Investigation Division",
+                    "ParentCode": "AR",
+                    "Acronym": "",
+                    "LastModified": "2024-01-05T10:40:47.953",
+                    "IsDisabled": "No"
+                },
+                {
+                    "Code": "ARXX",
+                    "Value": "U.S. Army Data Analysis Center",
+                    "ParentCode": "AR",
+                    "Acronym": "",
+                    "LastModified": "2024-07-05T14:51:56.22",
+                    "IsDisabled": "No"
+                },
+                {
+                    "Code": "DJ10",
+                    "Value": "Office of the Inspector General",
+                    "ParentCode": "DJ",
+                    "Acronym": "OIG",
+                    "LastModified": "2024-07-19T14:34:10.947",
+                    "IsDisabled": "No"
+                },
+                {
+                    "Code": "DJ11",
+                    "Value": "U.S. Trustee Program",
+                    "ParentCode": "DJ",
+                    "Acronym": "",
+                    "LastModified": "2024-07-19T14:34:10.97",
+                    "IsDisabled": "No"
+                },
+                {
+                    "Code": "NV41",
+                    "Value": "Naval Systems Management Activity",
+                    "ParentCode": "NV",
+                    "Acronym": "",
+                    "LastModified": "2024-07-19T14:34:10.89",
+                    "IsDisabled": "No"
+                },
+                {
+                    "Code": "FK00",
+                    "Value": "Farm Credit System Insurance Corporation",
+                    "ParentCode": "OT",
+                    "Acronym": "",
+                    "LastModified": "2024-08-30T14:36:19.977",
+                    "IsDisabled": "Yes"
+                },
+                {
+                    "Code": "GB00",
+                    "Value": "Development Finance Corporation",
+                    "ParentCode": "OT",
+                    "Acronym": "DFC",
+                    "LastModified": "2024-07-19T14:34:11.363",
+                    "IsDisabled": "No"
+                },
+                {
+                    "Code": "MA00",
+                    "Value": "Marine Mammal Commission",
+                    "ParentCode": "OT",
+                    "Acronym": "MMC",
+                    "LastModified": "2024-08-30T14:36:20.647",
+                    "IsDisabled": "Yes"
+                },
+                {
+                    "Code": "TV00",
+                    "Value": "Tennessee Valley Authority",
+                    "ParentCode": "OT",
+                    "Acronym": "TVA",
+                    "LastModified": "2024-02-02T10:43:17.34",
+                    "IsDisabled": "Yes"
+                },
+                {
+                    "Code": "TV99",
+                    "Value": "Tennessee Valley Authority, OIG",
+                    "ParentCode": "OT",
+                    "Acronym": "",
+                    "LastModified": "2024-05-20T11:38:56.217",
+                    "IsDisabled": "No"
+                },
+                {
+                    "Code": "HFHI",
+                    "Value": "Office of Inspector General for the Federal Housing Finance Agency",
+                    "ParentCode": "OT",
+                    "Acronym": "OIG",
+                    "LastModified": "2024-07-19T14:34:11.653",
+                    "IsDisabled": "No"
+                },
+                {
+                    "Code": "GU00",
+                    "Value": "The US Semiquincentennial Commission",
+                    "ParentCode": "OT",
+                    "Acronym": "",
+                    "LastModified": "2024-09-13T14:52:55.767",
+                    "IsDisabled": "Yes"
+                },
+                {
+                    "Code": "AF6R",
+                    "Value": "SFELM Activity N",
+                    "ParentCode": "AF",
+                    "Acronym": "",
+                    "LastModified": "2024-07-19T14:34:10.867",
+                    "IsDisabled": "No"
+                },
+                {
+                    "Code": "AF4B",
+                    "Value": "Non-DoD and Other Support-USSF",
+                    "ParentCode": "DD",
+                    "Acronym": "",
+                    "LastModified": "2024-01-05T10:40:47.8",
+                    "IsDisabled": "Yes"
+                },
+                {
+                    "Code": "ARCP",
+                    "Value": "Civilian Protection Center Of Excellence (CP CoE)",
+                    "ParentCode": "AR",
+                    "Acronym": "",
+                    "LastModified": "2024-03-01T10:40:52.967",
+                    "IsDisabled": "No"
+                },
+                {
+                    "Code": "AF6H",
+                    "Value": "USSF Support to HAF (NON-OCSO)",
+                    "ParentCode": "AF",
+                    "Acronym": "",
+                    "LastModified": "2024-07-19T14:34:09.97",
+                    "IsDisabled": "Yes"
+                },
+                {
+                    "Code": "AF6N",
+                    "Value": "National Space Intelligence Center",
+                    "ParentCode": "AF",
+                    "Acronym": "",
+                    "LastModified": "2024-03-01T10:40:53",
+                    "IsDisabled": "No"
+                },
+                {
+                    "Code": "AF6G",
+                    "Value": "USSF Support to USAF (NON-HAF)",
+                    "ParentCode": "AF",
+                    "Acronym": "",
+                    "LastModified": "2024-03-01T10:40:53.003",
+                    "IsDisabled": "No"
+                },
+                {
+                    "Code": "AF6A",
+                    "Value": "Space Rapid Capabilities Office",
+                    "ParentCode": "AF",
+                    "Acronym": "",
+                    "LastModified": "2024-03-01T10:40:53.013",
+                    "IsDisabled": "No"
+                },
+                {
+                    "Code": "AF4H",
+                    "Value": "USSF Support to HAF (NON-OCSO)",
+                    "ParentCode": "AF",
+                    "Acronym": "",
+                    "LastModified": "2024-07-19T14:34:12.937",
+                    "IsDisabled": "No"
+                },
+                {
+                    "Code": "AF6E",
+                    "Value": "Space Force Service Wide Support Activities",
+                    "ParentCode": "AF",
+                    "Acronym": "",
+                    "LastModified": "2024-07-19T14:34:12.993",
+                    "IsDisabled": "No"
+                },
+                {
+                    "Code": "AF6B",
+                    "Value": "Space Futures Command",
+                    "ParentCode": "AF",
+                    "Acronym": "",
+                    "LastModified": "2024-07-19T14:34:13.007",
+                    "IsDisabled": "No"
+                },
+                {
+                    "Code": "AF5C",
+                    "Value": "Cyberspace Capabilities Center",
+                    "ParentCode": "AF",
+                    "Acronym": "",
+                    "LastModified": "2024-09-27T14:38:19.497",
+                    "IsDisabled": "No"
+                }
+            ],
+            "id": "AgencySubElement"
+        }
+    ],
+    "DateGenerated": "2024-10-08T15:42:20.8800222Z"
+}

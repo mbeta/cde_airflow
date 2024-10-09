@@ -1,0 +1,38 @@
+{
+    "CodeList": [
+        {
+            "ValidValue": [
+                {
+                    "Code": "0182",
+                    "Value": "Marriage and Family Therapist",
+                    "LastModified": "2023-01-06T15:05:59.853",
+                    "IsDisabled": "No",
+                    "JobFamily": "0100"
+                },
+                {
+                    "Code": "0183",
+                    "Value": "Licensed Professional Mental Health Counselor",
+                    "LastModified": "2023-01-06T15:05:36.893",
+                    "IsDisabled": "No",
+                    "JobFamily": "0100"
+                },
+                {
+                    "Code": "0456",
+                    "Value": "Wildland Fire Management",
+                    "LastModified": "2022-08-05T11:40:52.37",
+                    "IsDisabled": "No",
+                    "JobFamily": "0400"
+                },
+                {
+                    "Code": "1560",
+                    "Value": "Data Science Series",
+                    "LastModified": "2022-01-10T12:35:01.647",
+                    "IsDisabled": "No",
+                    "JobFamily": "1500"
+                }
+            ],
+            "id": "OccupationalSeries"
+        }
+    ],
+    "DateGenerated": "2024-10-08T21:19:31.4779427Z"
+}
