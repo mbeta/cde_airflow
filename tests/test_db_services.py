@@ -1,6 +1,9 @@
 from unittest.mock import MagicMock
-from app.db_services import get_redshift_connection, create_table
-from app.db_services import get_organization_codes_by_names
+from app.db_services import (
+    get_redshift_connection, 
+    create_table,
+    get_organization_codes_by_names
+)
 
 
 def test_get_redshift_connection(monkeypatch):

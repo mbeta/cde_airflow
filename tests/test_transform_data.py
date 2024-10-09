@@ -1,22 +1,12 @@
 import pandas as pd
 import pytest
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 from app.transform_data import (
     transform_data_jobs,
     transform_data_organization,
     transform_data_category,
     transform_data_position_types,
 )
-
-# Mock de los datos que regresarían de get_organization_codes_by_names
-organization_map = {
-    'U.S. Army Military Surface Deployment and Distribution Command': 'ARXT',
-    'Department of the Army': 'AR',
-    'Air Force Materiel Command': 'AF1M',
-    'Department of the Air Force': 'AF00',
-    'Goddard Space Flight Center': 'NN51',
-    'National Aeronautics and Space Administration': 'NN00'
-}
 
 # Datos de entrada de ejemplo para los tests
 test_data_jobs = {
@@ -106,9 +96,25 @@ def mock_parquet_read():
 
 def test_transform_data_jobs(mock_parquet_read):
     mock_parquet_read.return_value = pd.DataFrame(test_data_jobs)
-    with patch('app.db_services.get_organization_codes_by_names',
-               return_value=organization_map):
+   
+    # Creamos un mock para la conexión
+    mock_connection = MagicMock()
+    mock_connection.execute.return_value = [
+        {'code': 'ARXT', 'name': 'U.S. Army Military Surface Deployment and Distribution Command'},
+        {'code': 'AF1M', 'name': 'Air Force Materiel Command'},
+        {'code': 'NN51', 'name': 'Goddard Space Flight Center'},
+        {'code': 'AR', 'name': 'Department of the Army'},
+        {'code': 'AF', 'name': 'Department of the Air Force'},
+        {'code': 'NN', 'name': 'National Aeronautics and Space Administration'},
+    ]
+    
+    # Definimos los mocks
+    with patch('app.db_services.get_redshift_connection', return_value=mock_connection):
         result = transform_data_jobs('dummy_path')
+        
+    # with patch('app.db_services.get_organization_codes_by_names', return_value=mock_connection):
+    #     result = transform_data_jobs('dummy_path')
+
     expected_data = {
         'object_id': ['811721900', '812494700', '811631200'],
         'position_id': ['MCGT244059969885HW',

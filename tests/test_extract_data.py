@@ -2,9 +2,12 @@ from unittest.mock import patch
 import pandas as pd
 import os
 import json
-from app.extract_data import extract_data_jobs, extract_data_organization
-from app.extract_data import extract_data_job_categories
-from app.extract_data import extract_data_position_type
+from app.extract_data import (
+    extract_data_jobs, 
+    extract_data_organization, 
+    extract_data_job_categories, 
+    extract_data_position_type
+    )
 
 
 @patch('app.extract_data.fetch_all_pages')

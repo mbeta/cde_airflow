@@ -1,7 +1,11 @@
 import os
 import pandas as pd
-from app.request_api import fetch_all_pages, fetch_organizations
-from app.request_api import fetch_job_categories, fetch_position_types
+from app.request_api import (
+    fetch_all_pages, 
+    fetch_organizations, 
+    fetch_job_categories, 
+    fetch_position_types
+    )
 from datetime import datetime
 
 
