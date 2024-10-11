@@ -1,5 +1,5 @@
 from unittest.mock import MagicMock
-from etl.app.db_services import (
+from app.db_services import (
     get_redshift_connection, 
     create_table,
     get_organization_codes_by_names

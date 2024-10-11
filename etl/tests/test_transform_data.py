@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 from unittest.mock import patch, MagicMock
-from etl.app.transform_data import (
+from app.transform_data import (
     transform_data_jobs,
     transform_data_organization,
     transform_data_category,
