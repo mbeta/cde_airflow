@@ -49,10 +49,17 @@ x-airflow-common:
     AIRFLOW__CORE__FERNET_KEY: ''
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+    USER_AGENT: ${USER_AGENT}
+    AUTHORIZATION_KEY: ${AUTHORIZATION_KEY}
+    HOST: ${HOST}
+    REDSHIFT_SCHEMA: ${REDSHIFT_SCHEMA}
+    REDSHIFT_CONN_STRING: ${REDSHIFT_CONN_STRING}
+    PYTHONPATH: '/opt/airflow/etl:/opt/airflow/dags'
   volumes:
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
     - ./plugins:/opt/airflow/plugins
+    - ./etl:/opt/airflow/etl
     - ./requirements.txt:/requirements.txt
   user: "${AIRFLOW_UID:-50000}:${AIRFLOW_GID:-50000}"
   depends_on:
