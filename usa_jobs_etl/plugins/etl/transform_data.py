@@ -1,6 +1,6 @@
 import pandas as pd
 from datetime import datetime
-from .db_services import  get_organization_codes_by_names
+from db_services import  get_organization_codes_by_names
 
 
 def transform_data_jobs(parquet_file: str):
@@ -151,6 +151,6 @@ def transform_data_position_types(parquet_file: str):
 
 
 if __name__ == '__main__':
-    parquet_file = 'data_temp/2024-10-06_11-34-00_jobs_data.parquet'
+    parquet_file = '../../data_temp/2024-10-06_11-34-00_jobs_data.parquet'
     transformed_data = transform_data_jobs(parquet_file)
     print(transformed_data.head())

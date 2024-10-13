@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 from unittest.mock import patch, MagicMock
-from etl.transform_data import transform_data_jobs, transform_data_organization,transform_data_position_types, transform_data_category
+from plugins.etl.transform_data import transform_data_jobs, transform_data_organization,transform_data_position_types, transform_data_category
 
 
 # Datos de entrada de ejemplo para los tests
@@ -106,7 +106,7 @@ def test_transform_data_jobs(mock_parquet_read):
     
     # Definimos los mocks
     #with patch('db_services.get_organization_codes_by_names', return_value=mock_connection):
-    with patch('etl.db_services.get_redshift_connection', return_value=mock_connection):    
+    with patch('plugins.etl.db_services.get_redshift_connection', return_value=mock_connection):    
         result = transform_data_jobs('dummy_path')
         
     # with patch('app.db_services.get_organization_codes_by_names', return_value=mock_connection):

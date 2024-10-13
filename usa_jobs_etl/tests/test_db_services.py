@@ -1,5 +1,5 @@
 from unittest.mock import MagicMock
-from etl.db_services import get_redshift_connection, create_table, get_organization_codes_by_names
+from plugins.etl.db_services import get_redshift_connection, create_table, get_organization_codes_by_names
 
 
 def test_get_redshift_connection(monkeypatch):
@@ -14,7 +14,7 @@ def test_get_redshift_connection(monkeypatch):
     monkeypatch.setenv('REDSHIFT_CONN_STRING',
                        'postgresql://user:password@host:5439/dbname')
     mock_create_engine = MagicMock()
-    monkeypatch.setattr('etl.db_services.create_engine', mock_create_engine)
+    monkeypatch.setattr('plugins.etl.db_services.create_engine', mock_create_engine)
 
     # Simulamos la conexión
     mock_connection = MagicMock()
@@ -36,7 +36,7 @@ def test_create_table(mocker):
     Args:
         mocker (_type_): Mock
     """
-    mock_get_redshift_connection = mocker.patch('etl.db_services.get_redshift_connection')
+    mock_get_redshift_connection = mocker.patch('plugins.etl.db_services.get_redshift_connection')
 
     mock_conn = MagicMock()
     mock_get_redshift_connection.return_value = mock_conn
@@ -53,7 +53,7 @@ def test_get_organization_codes_by_names(mocker):
         mocker (_type_): Mock
     """
     mock_get_redshift_connection = mocker.patch(
-        'etl.db_services.get_redshift_connection')
+        'plugins.etl.db_services.get_redshift_connection')
 
     mock_conn = MagicMock()
     mock_get_redshift_connection.return_value = mock_conn
