@@ -1,11 +1,6 @@
 import os
 import pandas as pd
-from app.request_api import (
-    fetch_all_pages, 
-    fetch_organizations, 
-    fetch_job_categories, 
-    fetch_position_types
-    )
+from request_api import fetch_all_pages, fetch_organizations, fetch_job_categories, fetch_position_types
 from datetime import datetime
 
 
@@ -20,8 +15,13 @@ def extract_data_jobs(keyword: str, output_parquet: str,
     output_parquet : str : Directorio donde se guardará el archivo Parquet.
     date_posted : int : Días desde que se publicó la oferta
                 (0 para hoy, 60 para el máximo histórico).
+                
     date_control: Fecha limite de control, para evitar procesar
-                    dias incompletos.
+                    dias incompletos. Se listan registros con fecha de publicación
+                    < a la fecha de control.
+                    
+    Returns:
+    str : Ruta completa del archivo Parquet generado.
     """
     # Llamar a la función fetch_all_pages para obtener los datos
     data = fetch_all_pages(keyword, date_posted)
@@ -137,6 +137,10 @@ def extract_data_organization(lastmodified: str, output_parquet: str):
     Arguments:
     lastmodified : str : Filtro de fecha formato YYYY-MM-DD
     para ultimas modificaciones.
+    output_parquet : str : Ruta del directorio donde se guardará el archivo Parquet.
+    
+    Returns:
+    str : Ruta completa del archivo Parquet generado.
     """
     # Llamar a la función fetch_organizations para obtener los datos
     data = fetch_organizations(lastmodified)
@@ -192,6 +196,10 @@ def extract_data_job_categories(lastmodified: str, output_parquet: str):
     Arguments:
     lastmodified : str : Filtro de fecha formato YYYY-MM-DD
     para ultimas modificaciones.
+    output_parquet : str : Ruta del directorio donde se guardará el archivo Parquet.
+    
+    Returns:
+    str : Ruta completa del archivo Parquet generado.
     """
     # Llamar a la función fetch_job_categories para obtener los datos
     data = fetch_job_categories(lastmodified)
@@ -244,6 +252,10 @@ def extract_data_position_type(lastmodified: str, output_parquet: str):
     Arguments:
     lastmodified : str : Filtro de fecha formato YYYY-MM-DD para
     ultimas modificaciones.
+    output_parquet : str : Ruta del directorio donde se guardará el archivo Parquet.
+    
+    Returns:
+    str : Ruta completa del archivo Parquet generado.
     """
     # Llamar a la función fetch_position_types para obtener los datos
     data = fetch_position_types(lastmodified)
@@ -284,3 +296,8 @@ def extract_data_position_type(lastmodified: str, output_parquet: str):
     else:
         print("No se han recibido datos.")
         return None
+
+
+if __name__ == '__main__':
+    parquet_file = 'data_temp'
+    exract_data = extract_data_job_categories('',parquet_file)

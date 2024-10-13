@@ -1,9 +1,10 @@
 [tool.poetry]
-name = "usa-jobs-data"
+name = "usa_jobs_etl"
 version = "0.1.0"
-description = ""
+description = "ETL para USA Jobs API"
 authors = ["Betania Martinez <martinezbetania@gmail.com>"]
 readme = "README.md"
+package-mode = false  # Desactiva el modo de paquete
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.13"
@@ -11,11 +12,14 @@ requests = "^2.32.3"
 numpy = "1.26.4"
 redshift-connector = "^2.1.3"
 sqlalchemy-redshift = "^0.8.14"
+SQLAlchemy= "1.4.53"
 psycopg2 = "^2.9.9"
 python-dotenv = "1.0.0"
 pandas = "^2.2.3"
 pyarrow = "^17.0.0"
 
+[tool.pytest.ini_options]
+pythonpath = [".", "etl"]
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.3"
