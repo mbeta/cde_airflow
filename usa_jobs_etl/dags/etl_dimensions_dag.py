@@ -7,16 +7,19 @@ import os
 DATA_PATH = os.path.dirname(os.path.realpath(__file__))
 
 def etl_job_category():
+    print(os.getenv('REDSHIFT_CONN_STRING'))
     data_path = extract_data.extract_data_job_categories('{{ ds_add(ds, -1) }}', DATA_PATH)
     transformed_data_parquet = transform_data.transform_data_category(data_path)
     load_to_redshift.load_categories_redshift(transformed_data_parquet)
 
 def etl_position_types():
+    print(os.getenv('REDSHIFT_CONN_STRING'))
     data_path = extract_data.extract_data_position_type('{{ ds_add(ds, -1) }}', DATA_PATH)
     transformed_data_parquet = transform_data.transform_data_position_types(data_path)
     load_to_redshift.load_position_types_redshift(transformed_data_parquet)
 
 def etl_organizations():
+    print(os.getenv('REDSHIFT_CONN_STRING'))
     data_path = extract_data.extract_data_organization('{{ ds_add(ds, -1) }}', DATA_PATH)
     transformed_data_parquet = transform_data.transform_data_organization(data_path)
     load_to_redshift.load_organization_redshift(transformed_data_parquet)
