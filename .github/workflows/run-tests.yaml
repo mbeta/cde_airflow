@@ -28,5 +28,4 @@ jobs:
       - name: Run pytest
         run: |
           cd usa_jobs_etl
-          cd etl
           poetry run pytest tests
