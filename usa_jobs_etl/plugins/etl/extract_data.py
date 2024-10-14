@@ -143,6 +143,7 @@ def extract_data_organization(lastmodified: str, output_parquet: str):
     str : Ruta completa del archivo Parquet generado.
     """
     # Llamar a la función fetch_organizations para obtener los datos
+    
     data = fetch_organizations(lastmodified)
     print(f"Cantidad de Registros: {len(data)}")
 

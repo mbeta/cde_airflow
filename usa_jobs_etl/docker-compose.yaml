@@ -54,12 +54,13 @@ x-airflow-common:
     HOST: ${HOST}
     REDSHIFT_SCHEMA: ${REDSHIFT_SCHEMA}
     REDSHIFT_CONN_STRING: ${REDSHIFT_CONN_STRING}
-    PYTHONPATH: '/opt/airflow/etl:/opt/airflow/dags'
+    DATA_TEMP: /opt/airflow/data_temp
+    PYTHONPATH: '/opt/airflow/plugins:/opt/airflow/dags'
   volumes:
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
     - ./plugins:/opt/airflow/plugins
-    - ./etl:/opt/airflow/etl
+    - ./data_temp:/opt/airflow/data_temp
     - ./requirements.txt:/requirements.txt
   user: "${AIRFLOW_UID:-50000}:${AIRFLOW_GID:-50000}"
   depends_on:

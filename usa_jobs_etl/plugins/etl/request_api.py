@@ -32,13 +32,7 @@ def get_data_jobs(keyword: str, page: int, date_posted: int = 0) -> dict:
     Returns:
     dict : Respuesta en formato JSON o None si hay un error.
     """
-    url = f"""
-    https://data.usajobs.gov/api/search?
-                Keyword={keyword}
-                &DatePosted={date_posted}
-                &Page={page}
-                &ResultsPerPage=500
-                """
+    url = f"""https://data.usajobs.gov/api/search?Keyword={keyword}&DatePosted={date_posted}&Page={page}&ResultsPerPage=500"""
     headers = build_headers()
 
     print(f"Consultando la página {page} de resultados...")
@@ -108,10 +102,7 @@ def get_data_jobs_categories(lastmodified: str) -> dict:
     Returns:
     dict : Respuesta en formato JSON o None si hay un error.
     """
-    url = f"""
-        https://data.usajobs.gov/api/codelist/occupationalseries?
-        lastmodified={lastmodified}
-    """
+    url = f"""https://data.usajobs.gov/api/codelist/occupationalseries?lastmodified={lastmodified}"""
     headers = build_headers()
 
     try:
@@ -141,10 +132,8 @@ def get_data_organization(lastmodified: str) -> dict:
     Returns:
     dict : Respuesta en formato JSON o None si hay un error.
     """
-    url = f"""
-        https://data.usajobs.gov/api/codelist/agencysubelements?
-        lastmodified={lastmodified}
-    """
+    url = f"""https://data.usajobs.gov/api/codelist/agencysubelements?lastmodified={lastmodified}"""
+    print(f"url: {url}")
     headers = build_headers()
 
     try:
@@ -174,10 +163,7 @@ def get_data_position_types(lastmodified: str) -> dict:
     Returns:
     dict : Respuesta en formato JSON o None si hay un error.
     """
-    url = f"""
-        https://data.usajobs.gov/api/codelist/positionofferingtypes?
-        lastmodified={lastmodified}
-    """
+    url = f"""https://data.usajobs.gov/api/codelist/positionofferingtypes?lastmodified={lastmodified}"""
     headers = build_headers()
 
     try:
@@ -206,7 +192,7 @@ def fetch_organizations(lastmodified: str):
     Returns:
     list : Lista con todas las Organizations en JSON.
     """
-
+    print(f"Llamada API Organizaciones - Fecha de ultima modificacion: {lastmodified}")
     response = get_data_organization(lastmodified)
 
     # Retorna resultado de solo  listado de organizaciones.

@@ -2,7 +2,7 @@ from airflow import DAG
 from airflow.exceptions import AirflowSkipException
 from airflow.operators.python import PythonOperator
 from datetime import datetime
-from etl import extract_data, transform_data, load_to_redshift
+from plugins.etl import extract_data, transform_data, load_to_redshift
 import os
 
 DATA_PATH = os.path.dirname(os.path.realpath(__file__))
