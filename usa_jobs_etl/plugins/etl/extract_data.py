@@ -1,16 +1,16 @@
+
 import os
 import pandas as pd
-from app.request_api import (
-    fetch_all_pages, 
-    fetch_organizations, 
-    fetch_job_categories, 
-    fetch_position_types
-    )
+from plugins.etl.request_apis import fetch_all_pages, fetch_organizations, fetch_job_categories, fetch_position_types
 from datetime import datetime
+# import sys
+
+# sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+#sys.path.append(os.path.join(os.path.dirname(__file__), 'etl'))
 
 
 def extract_data_jobs(keyword: str, output_parquet: str,
-                      date_posted: int = 0, date_control: datetime = None):
+                      date_posted: int = 0, date_control: str = None):
     """
     ETAPA EXTRACT JOBS
     Extrae datos de la API de USAJobs y los guarda en formato Parquet.
@@ -20,16 +20,24 @@ def extract_data_jobs(keyword: str, output_parquet: str,
     output_parquet : str : Directorio donde se guardará el archivo Parquet.
     date_posted : int : Días desde que se publicó la oferta
                 (0 para hoy, 60 para el máximo histórico).
+                
     date_control: Fecha limite de control, para evitar procesar
-                    dias incompletos.
+                    dias incompletos. Se listan registros con fecha de publicación
+                    < a la fecha de control. (YYYY-MM-DD)
+                    
+    Returns:
+    str : Ruta completa del archivo Parquet generado.
     """
     # Llamar a la función fetch_all_pages para obtener los datos
     data = fetch_all_pages(keyword, date_posted)
 
+    
     if data:
         # Crear una lista para almacenar los datos de los trabajos
         jobs = []
         print(f"Cantidad de registros a procesar: {len(data)}")
+        if date_control:
+            date_control = datetime.strptime(date_control, '%Y-%m-%d').date()
         for item in data:
             matched_descriptor = item['MatchedObjectDescriptor']
             # Control de fecha
@@ -40,11 +48,11 @@ def extract_data_jobs(keyword: str, output_parquet: str,
             if publication_start_date:
                 publication_start_date_control = datetime.strptime(
                     publication_start_date.split('T')[0], '%Y-%m-%d').date()
-                # Si la fecha es igual a la de date_control,
+                # Si la publication_start_date_control es mayor a la de date_control,
                 # ignorar este registro
                 if date_control and \
-                   publication_start_date_control >= date_control:
-                    continue
+                   publication_start_date_control > date_control:
+                        continue
 
             # Extraemos data de la descripción del item
             position_id = matched_descriptor['PositionID']
@@ -107,22 +115,27 @@ def extract_data_jobs(keyword: str, output_parquet: str,
                         'DetailPositionType': position_type_detail
                     })
 
-        # Convertir la lista de resultados a un DataFrame de pandas
-        df = pd.DataFrame(jobs)
+        if len(jobs) == 0:
+            print(f'No se encontraron registros a transformar')
+            return None
+        else:
+            print(f'Se toman {len(jobs)} registros a transformar')
+            # Convertir la lista de resultados a un DataFrame de pandas
+            df = pd.DataFrame(jobs)
 
-        # Verificar si el directorio existe, si no, crearlo
-        if not os.path.exists(output_parquet):
-            os.makedirs(output_parquet)
+            # Verificar si el directorio existe, si no, crearlo
+            if not os.path.exists(output_parquet):
+                os.makedirs(output_parquet)
 
-        # Obtener la fecha actual y formatearla como YYYY-MM-DD
-        timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+            # Obtener la fecha actual y formatearla como YYYY-MM-DD
+            timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 
-        # Guardar los datos en un archivo Parquet con la fecha
-        # y hora en el nombre
-        path = os.path.join(output_parquet, f'{timestamp}_jobs_data.parquet')
-        df.to_parquet(path, index=False)
-        print(f"Datos extraídos y guardados en {path}")
-        return path
+            # Guardar los datos en un archivo Parquet con la fecha
+            # y hora en el nombre
+            path = os.path.join(output_parquet, f'{timestamp}_jobs_data.parquet')
+            df.to_parquet(path, index=False)
+            print(f"Datos extraídos y guardados en {path}")
+            return path
     else:
         print("No se han recibido datos.")
         return None
@@ -137,8 +150,13 @@ def extract_data_organization(lastmodified: str, output_parquet: str):
     Arguments:
     lastmodified : str : Filtro de fecha formato YYYY-MM-DD
     para ultimas modificaciones.
+    output_parquet : str : Ruta del directorio donde se guardará el archivo Parquet.
+    
+    Returns:
+    str : Ruta completa del archivo Parquet generado.
     """
     # Llamar a la función fetch_organizations para obtener los datos
+    
     data = fetch_organizations(lastmodified)
     print(f"Cantidad de Registros: {len(data)}")
 
@@ -192,6 +210,10 @@ def extract_data_job_categories(lastmodified: str, output_parquet: str):
     Arguments:
     lastmodified : str : Filtro de fecha formato YYYY-MM-DD
     para ultimas modificaciones.
+    output_parquet : str : Ruta del directorio donde se guardará el archivo Parquet.
+    
+    Returns:
+    str : Ruta completa del archivo Parquet generado.
     """
     # Llamar a la función fetch_job_categories para obtener los datos
     data = fetch_job_categories(lastmodified)
@@ -244,6 +266,10 @@ def extract_data_position_type(lastmodified: str, output_parquet: str):
     Arguments:
     lastmodified : str : Filtro de fecha formato YYYY-MM-DD para
     ultimas modificaciones.
+    output_parquet : str : Ruta del directorio donde se guardará el archivo Parquet.
+    
+    Returns:
+    str : Ruta completa del archivo Parquet generado.
     """
     # Llamar a la función fetch_position_types para obtener los datos
     data = fetch_position_types(lastmodified)
@@ -284,3 +310,8 @@ def extract_data_position_type(lastmodified: str, output_parquet: str):
     else:
         print("No se han recibido datos.")
         return None
+
+
+# if __name__ == '__main__':
+#     parquet_file = 'data_temp'
+#     exract_data = extract_data_job_categories('',parquet_file)

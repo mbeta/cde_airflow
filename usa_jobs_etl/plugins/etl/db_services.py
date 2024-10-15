@@ -2,11 +2,15 @@
 from sqlalchemy import create_engine
 import os
 from dotenv import load_dotenv
+# import sys
+
+# sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 load_dotenv()
 
 
 def get_redshift_connection():
+    #print(os.getenv('REDSHIFT_CONN_STRING'))
     redshift_conn_string = os.getenv('REDSHIFT_CONN_STRING')
     if not redshift_conn_string:
         raise ValueError("'REDSHIFT_CONN_STRING' \

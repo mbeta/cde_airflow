@@ -22,8 +22,10 @@ jobs:
 
       - name: Install dependencies with poetry
         run: |
+          cd usa_jobs_etl
           poetry install
 
       - name: Run pytest
         run: |
+          cd usa_jobs_etl
           poetry run pytest tests

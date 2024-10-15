@@ -1,6 +1,10 @@
 import pandas as pd
 from datetime import datetime
-from app.db_services import get_organization_codes_by_names
+from plugins.etl.db_services import  get_organization_codes_by_names
+# import os
+# import sys
+
+# sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
 def transform_data_jobs(parquet_file: str):
@@ -17,8 +21,8 @@ def transform_data_jobs(parquet_file: str):
     dict : Un diccionario con DataFrames para la tabla de hechos
     y las dimensiones.
     """
-
     # Leer el archivo Parquet
+    print(parquet_file)
     df = pd.read_parquet(parquet_file)
     print("Columnas en el DataFrame:", df.columns.tolist())
 
@@ -148,3 +152,9 @@ def transform_data_position_types(parquet_file: str):
     })
 
     return dim_job_position_types_postings
+
+
+# if __name__ == '__main__':
+#     parquet_file = '../../data_temp/2024-10-06_11-34-00_jobs_data.parquet'
+#     transformed_data = transform_data_jobs(parquet_file)
+#     print(transformed_data.head())

@@ -2,15 +2,10 @@ from unittest.mock import patch
 import pandas as pd
 import os
 import json
-from app.extract_data import (
-    extract_data_jobs, 
-    extract_data_organization, 
-    extract_data_job_categories, 
-    extract_data_position_type
-    )
+from plugins.etl.extract_data import extract_data_jobs, extract_data_organization, extract_data_job_categories, extract_data_position_type
 
 
-@patch('app.extract_data.fetch_all_pages')
+@patch('plugins.etl.extract_data.fetch_all_pages')
 def test_extract_data_jobs(mock_fetch_all_pages):
     """
     Test Unitario funcion extract_data_jobs
@@ -57,7 +52,7 @@ def test_extract_data_jobs(mock_fetch_all_pages):
         os.remove(result_path)
 
 
-@patch('app.extract_data.fetch_organizations')
+@patch('plugins.etl.extract_data.fetch_organizations')
 def test_extract_data_organization(mock_fetch_organizations):
     # Cargar el JSON de ejemplo desde el archivo
     json_path = os.path.join(
@@ -90,7 +85,7 @@ def test_extract_data_organization(mock_fetch_organizations):
         os.remove(result_path)
 
 
-@patch('app.extract_data.fetch_job_categories')
+@patch('plugins.etl.extract_data.fetch_job_categories')
 def test_extract_data_job_categories(mock_fetch_job_categories):
     # Cargar el JSON de ejemplo desde el archivo
     json_path = os.path.join(
@@ -123,7 +118,7 @@ def test_extract_data_job_categories(mock_fetch_job_categories):
         os.remove(result_path)
 
 
-@patch('app.extract_data.fetch_position_types')
+@patch('plugins.etl.extract_data.fetch_position_types')
 def test_extract_data_position_type(mock_fetch_position_types):
     # Cargar el JSON de ejemplo desde el archivo
     json_path = os.path.join(
