@@ -1,7 +1,12 @@
+
 import os
 import pandas as pd
-from request_api import fetch_all_pages, fetch_organizations, fetch_job_categories, fetch_position_types
+from plugins.etl.request_apis import fetch_all_pages, fetch_organizations, fetch_job_categories, fetch_position_types
 from datetime import datetime
+# import sys
+
+# sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+#sys.path.append(os.path.join(os.path.dirname(__file__), 'etl'))
 
 
 def extract_data_jobs(keyword: str, output_parquet: str,
@@ -307,6 +312,6 @@ def extract_data_position_type(lastmodified: str, output_parquet: str):
         return None
 
 
-if __name__ == '__main__':
-    parquet_file = 'data_temp'
-    exract_data = extract_data_job_categories('',parquet_file)
+# if __name__ == '__main__':
+#     parquet_file = 'data_temp'
+#     exract_data = extract_data_job_categories('',parquet_file)

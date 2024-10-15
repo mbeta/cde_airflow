@@ -1,9 +1,12 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-from etl import extract_data, transform_data, load_to_redshift, request_api, db_services
+from plugins.etl import extract_data, transform_data, load_to_redshift
 from datetime import datetime
-from datetime import timedelta
 import os
+
+# import sys
+
+# sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 DATA_TEMP = os.getenv('DATA_TEMP')
 

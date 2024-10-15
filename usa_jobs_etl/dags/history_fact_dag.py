@@ -2,8 +2,11 @@ from airflow import DAG
 from airflow.exceptions import AirflowSkipException
 from airflow.operators.python import PythonOperator
 from datetime import datetime, timedelta
-from etl import extract_data, transform_data, load_to_redshift
+from plugins.etl import extract_data, transform_data, load_to_redshift
 import os
+# import sys
+
+# sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 DATA_TEMP = os.getenv('DATA_TEMP')
 

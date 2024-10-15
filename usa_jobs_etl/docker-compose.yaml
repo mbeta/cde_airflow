@@ -55,7 +55,8 @@ x-airflow-common:
     REDSHIFT_SCHEMA: ${REDSHIFT_SCHEMA}
     REDSHIFT_CONN_STRING: ${REDSHIFT_CONN_STRING}
     DATA_TEMP: /opt/airflow/data_temp
-    PYTHONPATH: '/opt/airflow/plugins:/opt/airflow/dags'
+    # PYTHONPATH: '/opt/airflow/plugins:/opt/airflow/plugins/etl:/opt/airflow/dags'
+    PYTHONPATH: '/opt/airflow'
   volumes:
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs

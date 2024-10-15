@@ -1,6 +1,10 @@
+
 import requests
 import os
 from dotenv import load_dotenv
+# import sys
+
+# sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Cargar las variables de entorno desde el archivo .env
 load_dotenv()
@@ -236,13 +240,13 @@ def fetch_position_types(lastmodified: str):
     return response['CodeList'][0]['ValidValue']
 
 
-if __name__ == "__main__":
-    # Ejemplo de consulta diaria
-    jobs_today = fetch_all_pages('Software', date_posted=0)
-    if jobs_today:
-        print(f"Se encontraron {len(jobs_today)} trabajos publicados hoy.")
+# if __name__ == "__main__":
+#     # Ejemplo de consulta diaria
+#     jobs_today = fetch_all_pages('Software', date_posted=0)
+#     if jobs_today:
+#         print(f"Se encontraron {len(jobs_today)} trabajos publicados hoy.")
 
-    # Ejemplo de consulta histórica (últimos 60 días)
-    jobs_history = fetch_all_pages('Software', date_posted=1)
-    if jobs_history:
-        print(f"Se encontraron {len(jobs_history)} trabajos publicados.")
+#     # Ejemplo de consulta histórica (últimos 60 días)
+#     jobs_history = fetch_all_pages('Software', date_posted=1)
+#     if jobs_history:
+#         print(f"Se encontraron {len(jobs_history)} trabajos publicados.")
