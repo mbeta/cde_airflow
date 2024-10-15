@@ -22,7 +22,7 @@ def load_jobs_redshift(df: pd.DataFrame, batch_size: int = 50):
     redshift_conn_string = os.getenv('REDSHIFT_CONN_STRING')
     print(f'load_jobs: {redshift_conn_string}')
     schema = f'"{os.getenv('REDSHIFT_SCHEMA')}"'
-    engine = create_engine(redshift_conn_string)
+    engine = create_engine(redshift_conn_string,  isolation_level='READ COMMITTED')
 
     # # Listas para almacenar los datos de actualización e inserción
     # update_queries = []

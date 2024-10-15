@@ -1,8 +1,7 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from etl import extract_data, transform_data, load_to_redshift, request_api, db_services
-from datetime import datetime
-from datetime import timedelta
+from datetime import datetime, timedelta
 import os
 
 DATA_TEMP = os.getenv('DATA_TEMP')
