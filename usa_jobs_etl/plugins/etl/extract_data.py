@@ -3,10 +3,6 @@ import os
 import pandas as pd
 from plugins.etl.request_apis import fetch_all_pages, fetch_organizations, fetch_job_categories, fetch_position_types
 from datetime import datetime
-# import sys
-
-# sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-#sys.path.append(os.path.join(os.path.dirname(__file__), 'etl'))
 
 
 def extract_data_jobs(keyword: str, output_parquet: str,

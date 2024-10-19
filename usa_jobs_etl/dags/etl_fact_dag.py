@@ -7,9 +7,7 @@ from airflow import settings
 from datetime import datetime, timedelta
 from plugins.etl import extract_data, transform_data, load_to_redshift
 import os
-# import sys
 
-# sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DATA_TEMP = os.getenv('DATA_TEMP')
 
 def extract_data_func(**kwargs):
@@ -54,6 +52,7 @@ def load_data_func(**kwargs):
     else:
         print(f'Sin datos a cargar en Redshift')
 
+#Funcion para controlar si el DAG de dimensiones se ejecuto correctamente
 def get_execution_date(dt, **kwargs):
     session = settings.Session()
     
