@@ -1,10 +1,6 @@
 import pandas as pd
 from datetime import datetime
 from plugins.etl.db_services import  get_organization_codes_by_names
-# import os
-# import sys
-
-# sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
 def transform_data_jobs(parquet_file: str):
