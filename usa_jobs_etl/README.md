@@ -138,4 +138,12 @@ Si realizo cambios en el proyecto y desea desplegarlos:
 2. docker-compose build
 3. docker-compose up
 
+#### Test Unitarios
+Tener en cuenta que se encuentra configurado Test Unitarios que se validan mediante Github Actions.
+Configuracion en .github/workflows/run-tests.yaml
+Test unitarios en /usa_jobs_etl/tests
 
+Si desea chequear los test:
+1. ir al directorio /usa_jobs_etl
+2. ejecutar: poetry install (la primera vez)
+3. ejecutar: poetry run pytest tests
