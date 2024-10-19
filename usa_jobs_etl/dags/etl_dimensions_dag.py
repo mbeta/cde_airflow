@@ -3,31 +3,27 @@ from airflow.operators.python import PythonOperator
 from plugins.etl import extract_data, transform_data, load_to_redshift
 from datetime import datetime, timedelta
 import os
-# import sys
 
-# sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DATA_TEMP = os.getenv('DATA_TEMP')
 
 def etl_job_category(fecha_contexto):
-    print(os.getenv('REDSHIFT_CONN_STRING'))
-    print(os.getenv('DATA_TEMP'))
-    print(fecha_contexto)
+    #ETL para Dimension Job Category
+    print(f'Fecha contexto ejecucion: {fecha_contexto}')
     lastmodified = (datetime.strptime(fecha_contexto, '%Y-%m-%d') - timedelta(days=1)).strftime('%Y-%m-%d')
-    print(lastmodified)
+    print(f'Fecha ultima modificacion para consulta API: {lastmodified}')
     data_path = extract_data.extract_data_job_categories(lastmodified, DATA_TEMP)
-    print(data_path)
+    print(f'Parquet de datos guardados en: {data_path}')
     if(data_path):
         transformed_data_parquet = transform_data.transform_data_category(data_path)
         load_to_redshift.load_categories_redshift(transformed_data_parquet)
 
 def etl_position_types(fecha_contexto):
-    print(os.getenv('REDSHIFT_CONN_STRING'))
-    print(os.getenv('DATA_TEMP'))
-    print(fecha_contexto)
+    #ETL para Dimension Position Types
+    print(f'Fecha contexto ejecucion: {fecha_contexto}')
     lastmodified = (datetime.strptime(fecha_contexto, '%Y-%m-%d') - timedelta(days=1)).strftime('%Y-%m-%d')
-    print(lastmodified)
+    print(f'Fecha ultima modificacion para consulta API: {lastmodified}')
     data_path = extract_data.extract_data_position_type(lastmodified, DATA_TEMP)
-    print(data_path)
+    print(f'Parquet de datos guardados en: {data_path}')
     if(data_path):
         transformed_data_parquet = transform_data.transform_data_position_types(data_path)
         load_to_redshift.load_position_types_redshift(transformed_data_parquet)
@@ -35,13 +31,12 @@ def etl_position_types(fecha_contexto):
     
 
 def etl_organizations(fecha_contexto):
-    print(os.getenv('REDSHIFT_CONN_STRING'))
-    print(os.getenv('DATA_TEMP'))
-    print(fecha_contexto)
+    #ETL para Dimension Organizations
+    print(f'Fecha contexto ejecucion: {fecha_contexto}')
     lastmodified = (datetime.strptime(fecha_contexto, '%Y-%m-%d') - timedelta(days=1)).strftime('%Y-%m-%d')
-    print(lastmodified)
+    print(f'Fecha ultima modificacion para consulta API: {lastmodified}')
     data_path = extract_data.extract_data_organization(lastmodified, DATA_TEMP)
-    print(data_path)
+    print(f'Parquet de datos guardados en: {data_path}')
     if(data_path):
         transformed_data_parquet = transform_data.transform_data_organization(data_path)
         load_to_redshift.load_organization_redshift(transformed_data_parquet)

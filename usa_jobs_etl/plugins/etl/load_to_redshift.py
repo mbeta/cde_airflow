@@ -2,10 +2,6 @@ import pandas as pd
 from sqlalchemy import create_engine
 import os
 from dotenv import load_dotenv
-# import sys
-
-# sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 
 load_dotenv()
 
@@ -26,10 +22,6 @@ def load_jobs_redshift(df: pd.DataFrame, batch_size: int = 50):
     print(f'load_jobs: {redshift_conn_string}')
     schema = f'"{os.getenv('REDSHIFT_SCHEMA')}"'
     engine = create_engine(redshift_conn_string,  isolation_level='READ COMMITTED')
-
-    # # Listas para almacenar los datos de actualización e inserción
-    # update_queries = []
-    # insert_queries = []
 
     # Iniciar la conexión y transacción
     with engine.connect() as conn:

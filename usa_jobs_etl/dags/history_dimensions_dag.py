@@ -4,15 +4,10 @@ from plugins.etl import extract_data, transform_data, load_to_redshift
 from datetime import datetime
 import os
 
-# import sys
-
-# sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 DATA_TEMP = os.getenv('DATA_TEMP')
 
 def history_job_category(fecha_contexto):
-    print(os.getenv('REDSHIFT_CONN_STRING'))
-    print(os.getenv('DATA_TEMP'))
     print(f'{fecha_contexto}: Se inicia carga HISTORICA de Dimension Job Category')
     data_path = extract_data.extract_data_job_categories('', DATA_TEMP)
     print(data_path)
@@ -21,8 +16,6 @@ def history_job_category(fecha_contexto):
         load_to_redshift.load_categories_redshift(transformed_data_parquet)
 
 def history_position_types(fecha_contexto):
-    print(os.getenv('REDSHIFT_CONN_STRING'))
-    print(os.getenv('DATA_TEMP'))
     print(f'{fecha_contexto}: Se inicia carga HISTORICA de Dimension Position Types')
     data_path = extract_data.extract_data_position_type('', DATA_TEMP)
     print(data_path)
@@ -33,8 +26,6 @@ def history_position_types(fecha_contexto):
     
 
 def history_organizations(fecha_contexto):
-    print(os.getenv('REDSHIFT_CONN_STRING'))
-    print(os.getenv('DATA_TEMP'))
     print(f'{fecha_contexto}: Se inicia carga HISTORICA de Dimension Organizations')
     data_path = extract_data.extract_data_organization('', DATA_TEMP)
     print(data_path)

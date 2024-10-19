@@ -4,9 +4,6 @@ from airflow.operators.python import PythonOperator
 from datetime import datetime, timedelta
 from plugins.etl import extract_data, transform_data, load_to_redshift
 import os
-# import sys
-
-# sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 DATA_TEMP = os.getenv('DATA_TEMP')
 
@@ -27,7 +24,6 @@ def history_extract_data_func(**kwargs):
     return extract_data.extract_data_jobs(keyword,output_parquet, date_posted, date_control)
 
 def history_transform_data_func(**kwargs):
-       
     parquet_file = kwargs['ti'].xcom_pull(task_ids='history_extract_data')
     print(f'parquet_file: {parquet_file}')
     return transform_data.transform_data_jobs(parquet_file)
