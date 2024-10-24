@@ -17,6 +17,7 @@ psycopg2 = "^2.9.9"
 python-dotenv = "1.0.0"
 pandas = "^2.2.3"
 pyarrow = "^17.0.0"
+apache-airflow = "2.10.2"
 
 [tool.pytest.ini_options]
 pythonpath = [".", "plugins/etl"]

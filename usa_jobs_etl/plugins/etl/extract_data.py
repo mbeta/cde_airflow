@@ -1,8 +1,13 @@
 
+from airflow.exceptions import AirflowException
+import logging
 import os
 import pandas as pd
 from plugins.etl.request_apis import fetch_all_pages, fetch_organizations, fetch_job_categories, fetch_position_types
 from datetime import datetime
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 def extract_data_jobs(keyword: str, output_parquet: str,
@@ -24,117 +29,117 @@ def extract_data_jobs(keyword: str, output_parquet: str,
     Returns:
     str : Ruta completa del archivo Parquet generado.
     """
-    # Llamar a la función fetch_all_pages para obtener los datos
-    data = fetch_all_pages(keyword, date_posted)
+   
+   
+    try:
+        # Llamar a la función fetch_all_pages para obtener los datos
+        logger.info("Iniciando extracción de datos de JOBS.")
+        data = fetch_all_pages(keyword, date_posted)
 
-    
-    if data:
-        # Crear una lista para almacenar los datos de los trabajos
-        jobs = []
-        print(f"Cantidad de registros a procesar: {len(data)}")
-        if date_control:
-            date_control = datetime.strptime(date_control, '%Y-%m-%d').date()
-        for item in data:
-            matched_descriptor = item['MatchedObjectDescriptor']
-            # Control de fecha
-            publication_start_date = matched_descriptor.get(
-                'PublicationStartDate', None)
-            # Verificar que la fecha de publicación exista y
-            # convertirla a un objeto datetime
-            if publication_start_date:
-                publication_start_date_control = datetime.strptime(
-                    publication_start_date.split('T')[0], '%Y-%m-%d').date()
-                # Si la publication_start_date_control es mayor a la de date_control,
-                # ignorar este registro
-                if date_control and \
-                   publication_start_date_control > date_control:
-                        continue
+        
+        if data:
+            # Crear una lista para almacenar los datos de los trabajos
+            jobs = []
+            logger.info(f"Cantidad de registros a procesar: {len(data)}")
+            if date_control:
+                date_control = datetime.strptime(date_control, '%Y-%m-%d').date()
+            for item in data:
+                matched_descriptor = item['MatchedObjectDescriptor']
+                # Control de fecha
+                publication_start_date = matched_descriptor.get(
+                    'PublicationStartDate', None)
+                # Verificar que la fecha de publicación exista y
+                # convertirla a un objeto datetime
+                if publication_start_date:
+                    publication_start_date_control = datetime.strptime(
+                        publication_start_date.split('T')[0], '%Y-%m-%d').date()
+                    # Si la publication_start_date_control es mayor a la de date_control,
+                    # ignorar este registro
+                    if date_control and \
+                    publication_start_date_control > date_control:
+                            continue
 
-            # Extraemos data de la descripción del item
-            position_id = matched_descriptor['PositionID']
-            matched_object_id = item['MatchedObjectId']
-            position_title = matched_descriptor['PositionTitle']
+                # Extraemos data de la descripción del item
+                position_id = matched_descriptor['PositionID']
+                matched_object_id = item['MatchedObjectId']
+                position_title = matched_descriptor['PositionTitle']
 
-            # Posterior relacion con dimension Organizations
-            organization_name = matched_descriptor['OrganizationName']
-            department_name = matched_descriptor['DepartmentName']
-            location_display = matched_descriptor['PositionLocationDisplay']
+                # Posterior relacion con dimension Organizations
+                organization_name = matched_descriptor['OrganizationName']
+                department_name = matched_descriptor['DepartmentName']
+                location_display = matched_descriptor['PositionLocationDisplay']
 
-            # Informacion de fechas de la publicación
-            publication_start_date = matched_descriptor.get(
-                'PublicationStartDate', None)
-            application_close_date = matched_descriptor.get(
-                'ApplicationCloseDate', None)
-            position_start_date = matched_descriptor.get(
-                'PositionStartDate', None)
-            position_end_date = matched_descriptor.get(
-                'PositionEndDate', None)
+                # Informacion de fechas de la publicación
+                publication_start_date = matched_descriptor.get('PublicationStartDate', None)
+                application_close_date = matched_descriptor.get('ApplicationCloseDate', None)
+                position_start_date = matched_descriptor.get('PositionStartDate', None)
+                position_end_date = matched_descriptor.get('PositionEndDate', None)
 
-            position_remuneration = matched_descriptor[
-                'PositionRemuneration'][0] if matched_descriptor.get(
-                    'PositionRemuneration') else {}
-            min_salary = position_remuneration.get(
-                'MinimumRange', None)
-            max_salary = position_remuneration.get(
-                'MaximumRange', None)
-            rate_interval_description = position_remuneration.get(
-                'Description', None)
+                position_remuneration = matched_descriptor[
+                    'PositionRemuneration'][0] if matched_descriptor.get('PositionRemuneration') else {}
+                min_salary = position_remuneration.get('MinimumRange', None)
+                max_salary = position_remuneration.get('MaximumRange', None)
+                rate_interval_description = position_remuneration.get('Description', None)
 
-            # Pueden presentarse mas de una categoria por posteo
-            job_categories = matched_descriptor.get('JobCategory')
+                # Pueden presentarse mas de una categoria por posteo
+                job_categories = matched_descriptor.get('JobCategory')
 
-            # Creo un registro por cada categoria encontrada
-            for job_category in job_categories:
-                job_category_code = job_category.get('Code')
+                # Creo un registro por cada categoria encontrada
+                for job_category in job_categories:
+                    job_category_code = job_category.get('Code')
 
-                position_types = matched_descriptor['PositionOfferingType']
-                # Creo registros por cada combinacion de tipos
-                for position_type in position_types:
-                    position_type_code = position_type.get('Code', None)
-                    position_type_detail = position_type.get('Name', None)
-                    jobs.append({
-                        'MatchedObjectId': matched_object_id,
-                        'PositionID': position_id,
-                        'PositionTitle': position_title,
-                        'PositionLocationDisplay': location_display,
-                        'OrganizationName': organization_name,
-                        'DepartmentName': department_name,
-                        'JobCategoryCode': job_category_code,
-                        'PositionStartDate': position_start_date,
-                        'PositionEndDate': position_end_date,
-                        'PublicationStartDate': publication_start_date,
-                        'ApplicationCloseDate': application_close_date,
-                        'MinSalary': min_salary,
-                        'MaxSalary': max_salary,
-                        'RateIntervalDescription': rate_interval_description,
-                        'PositionTypeCode': position_type_code,
-                        'DetailPositionType': position_type_detail
-                    })
+                    position_types = matched_descriptor['PositionOfferingType']
+                    # Creo registros por cada combinacion de tipos
+                    for position_type in position_types:
+                        position_type_code = position_type.get('Code', None)
+                        position_type_detail = position_type.get('Name', None)
+                        jobs.append({
+                            'MatchedObjectId': matched_object_id,
+                            'PositionID': position_id,
+                            'PositionTitle': position_title,
+                            'PositionLocationDisplay': location_display,
+                            'OrganizationName': organization_name,
+                            'DepartmentName': department_name,
+                            'JobCategoryCode': job_category_code,
+                            'PositionStartDate': position_start_date,
+                            'PositionEndDate': position_end_date,
+                            'PublicationStartDate': publication_start_date,
+                            'ApplicationCloseDate': application_close_date,
+                            'MinSalary': min_salary,
+                            'MaxSalary': max_salary,
+                            'RateIntervalDescription': rate_interval_description,
+                            'PositionTypeCode': position_type_code,
+                            'DetailPositionType': position_type_detail
+                        })
 
-        if len(jobs) == 0:
-            print(f'No se encontraron registros a transformar')
-            return None
+            if len(jobs) == 0:
+                logger.warning(f'No se encontraron registros a transformar')
+                return None
+            else:
+                logger.info(f'Se toman {len(jobs)} registros a transformar')
+                # Convertir la lista de resultados a un DataFrame de pandas
+                df = pd.DataFrame(jobs)
+
+                # Verificar si el directorio existe, si no, crearlo
+                if not os.path.exists(output_parquet):
+                    os.makedirs(output_parquet)
+
+                # Obtener la fecha actual y formatearla como YYYY-MM-DD
+                timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+
+                # Guardar los datos en un archivo Parquet con la fecha
+                # y hora en el nombre
+                path = os.path.join(output_parquet, f'{timestamp}_jobs_data.parquet')
+                df.to_parquet(path, index=False)
+                logger.info(f"Datos extraídos y guardados en {path}")
+                return path
         else:
-            print(f'Se toman {len(jobs)} registros a transformar')
-            # Convertir la lista de resultados a un DataFrame de pandas
-            df = pd.DataFrame(jobs)
+            logger.warning("No se han recibido datos.")
+            return None
+    except Exception as e:
+        logger.error(f"Error durante la extracción de datos de JOBS: {str(e)}")
+        raise AirflowException(f"Error durante la extracción de datos de JOBS: {str(e)}")
 
-            # Verificar si el directorio existe, si no, crearlo
-            if not os.path.exists(output_parquet):
-                os.makedirs(output_parquet)
-
-            # Obtener la fecha actual y formatearla como YYYY-MM-DD
-            timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-
-            # Guardar los datos en un archivo Parquet con la fecha
-            # y hora en el nombre
-            path = os.path.join(output_parquet, f'{timestamp}_jobs_data.parquet')
-            df.to_parquet(path, index=False)
-            print(f"Datos extraídos y guardados en {path}")
-            return path
-    else:
-        print("No se han recibido datos.")
-        return None
 
 
 def extract_data_organization(lastmodified: str, output_parquet: str):
@@ -153,48 +158,55 @@ def extract_data_organization(lastmodified: str, output_parquet: str):
     """
     # Llamar a la función fetch_organizations para obtener los datos
     
-    data = fetch_organizations(lastmodified)
-    print(f"Cantidad de Registros: {len(data)}")
+    try:
+        logger.info("Iniciando extracción de datos de organizaciones.")
+        data = fetch_organizations(lastmodified)
+        logger.info(f"Cantidad de Registros: {len(data)}")
 
-    if data:
-        # Crear una lista para almacenar los datos de la
-        # dimension de organizaciones
-        organizations = []
 
-        for item in data:
-            code = item.get('Code', None)
-            value = item.get('Value', None)
-            parent_code = item.get('ParentCode', None)
-            last_modified = item.get('LastModified', None)
-            id_disabled = item.get('IsDisabled', None)
-            organizations.append({
-                'Code': code,
-                'Value': value,
-                'ParentCode': parent_code,
-                'LastModified': last_modified,
-                'IsDisabled': id_disabled
-            })
+        if data:
+            # Crear una lista para almacenar los datos de la
+            # dimension de organizaciones
+            organizations = []
 
-        # Convertir la lista de resultados a un DataFrame de pandas
-        df = pd.DataFrame(organizations)
+            for item in data:
+                code = item.get('Code', None)
+                value = item.get('Value', None)
+                parent_code = item.get('ParentCode', None)
+                last_modified = item.get('LastModified', None)
+                id_disabled = item.get('IsDisabled', None)
+                organizations.append({
+                    'Code': code,
+                    'Value': value,
+                    'ParentCode': parent_code,
+                    'LastModified': last_modified,
+                    'IsDisabled': id_disabled
+                })
 
-        # Verificar si el directorio existe, si no, crearlo
-        if not os.path.exists(output_parquet):
-            os.makedirs(output_parquet)
+            # Convertir la lista de resultados a un DataFrame de pandas
+            df = pd.DataFrame(organizations)
 
-        # Obtener la fecha actual y formatearla como YYYY-MM-DD
-        timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+            # Verificar si el directorio existe, si no, crearlo
+            if not os.path.exists(output_parquet):
+                os.makedirs(output_parquet)
 
-        # Guardar los datos en un archivo Parquet con la fecha y
-        # hora en el nombre
-        path = os.path.join(
-            output_parquet, f'{timestamp}_organizations_data.parquet')
-        df.to_parquet(path, index=False)
-        print(f"Datos extraídos y guardados en {path}")
-        return path
-    else:
-        print("No se han recibido datos.")
-        return None
+            # Obtener la fecha actual y formatearla como YYYY-MM-DD
+            timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+
+            # Guardar los datos en un archivo Parquet con la fecha y
+            # hora en el nombre
+            path = os.path.join(
+                output_parquet, f'{timestamp}_organizations_data.parquet')
+            df.to_parquet(path, index=False)
+            logger.info(f"Datos extraídos y guardados en {path}")
+            return path
+        else:
+            logger.warning("No se han recibido datos.")
+            return None
+    except Exception as e:
+        logger.error(f"Error durante la extracción de datos de organizaciones: {str(e)}")
+        raise AirflowException(f"Error durante la extracción de datos de organizaciones: {str(e)}")
+
 
 
 def extract_data_job_categories(lastmodified: str, output_parquet: str):
@@ -211,46 +223,52 @@ def extract_data_job_categories(lastmodified: str, output_parquet: str):
     Returns:
     str : Ruta completa del archivo Parquet generado.
     """
-    # Llamar a la función fetch_job_categories para obtener los datos
-    data = fetch_job_categories(lastmodified)
-    if data:
-        # Crear una lista para almacenar los datos de la
-        # dimension de categorias
-        job_categories = []
-        for item in data:
-            code = item.get('Code', None)
-            value = item.get('Value', None)
-            job_family = item.get('JobFamily', None)
-            last_modified = item.get('LastModified', None)
-            id_disabled = item.get('IsDisabled', None)
-            job_categories.append({
-                'Code': code,
-                'Value': value,
-                'JobFamily': job_family,
-                'LastModified': last_modified,
-                'IsDisabled': id_disabled
-            })
+    try:
+        logger.info("Iniciando extracción de datos de categorías de empleo.")   
+        # Llamar a la función fetch_job_categories para obtener los datos
+        data = fetch_job_categories(lastmodified)
+        if data:
+            # Crear una lista para almacenar los datos de la
+            # dimension de categorias
+            job_categories = []
+            for item in data:
+                code = item.get('Code', None)
+                value = item.get('Value', None)
+                job_family = item.get('JobFamily', None)
+                last_modified = item.get('LastModified', None)
+                id_disabled = item.get('IsDisabled', None)
+                job_categories.append({
+                    'Code': code,
+                    'Value': value,
+                    'JobFamily': job_family,
+                    'LastModified': last_modified,
+                    'IsDisabled': id_disabled
+                })
 
-        # Convertir la lista de resultados a un DataFrame de pandas
-        df = pd.DataFrame(job_categories)
+            # Convertir la lista de resultados a un DataFrame de pandas
+            df = pd.DataFrame(job_categories)
 
-        # Verificar si el directorio existe, si no, crearlo
-        if not os.path.exists(output_parquet):
-            os.makedirs(output_parquet)
+            # Verificar si el directorio existe, si no, crearlo
+            if not os.path.exists(output_parquet):
+                os.makedirs(output_parquet)
 
-        # Obtener la fecha actual y formatearla como YYYY-MM-DD
-        timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+            # Obtener la fecha actual y formatearla como YYYY-MM-DD
+            timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 
-        # Guardar los datos en un archivo Parquet con la fecha y
-        # hora en el nombre
-        path = os.path.join(
-            output_parquet, f'{timestamp}_job_categories_data.parquet')
-        df.to_parquet(path, index=False)
-        print(f"Datos extraídos y guardados en {path}")
-        return path
-    else:
-        print("No se han recibido datos.")
-        return None
+            # Guardar los datos en un archivo Parquet con la fecha y
+            # hora en el nombre
+            path = os.path.join(
+                output_parquet, f'{timestamp}_job_categories_data.parquet')
+            df.to_parquet(path, index=False)
+            logger.info(f"Datos extraídos y guardados en {path}")
+            return path
+        else:
+            logger.warning("No se han recibido datos.")
+            return None
+    except Exception as e:
+        logger.error(f"Error durante la extracción de datos de categorías de empleo: {str(e)}")
+        raise AirflowException(f"Error durante la extracción de datos de categorías de empleo: {str(e)}")
+
 
 
 def extract_data_position_type(lastmodified: str, output_parquet: str):
@@ -267,45 +285,51 @@ def extract_data_position_type(lastmodified: str, output_parquet: str):
     Returns:
     str : Ruta completa del archivo Parquet generado.
     """
-    # Llamar a la función fetch_position_types para obtener los datos
-    data = fetch_position_types(lastmodified)
+    try:
+        logger.info("Iniciando extracción de datos de categorías de empleo.")
+        # Llamar a la función fetch_position_types para obtener los datos
+        data = fetch_position_types(lastmodified)
 
-    if data:
-        # Crear una lista para almacenar los datos de la dimension
-        # de tipos de posiciones
-        position_types = []
-        for item in data:
-            code = item.get('Code', None)
-            value = item.get('Value', None)
-            last_modified = item.get('LastModified', None)
-            id_disabled = item.get('IsDisabled', None)
-            position_types.append({
-                'Code': code,
-                'Value': value,
-                'LastModified': last_modified,
-                'IsDisabled': id_disabled
-            })
+        if data:
+            # Crear una lista para almacenar los datos de la dimension
+            # de tipos de posiciones
+            position_types = []
+            for item in data:
+                code = item.get('Code', None)
+                value = item.get('Value', None)
+                last_modified = item.get('LastModified', None)
+                id_disabled = item.get('IsDisabled', None)
+                position_types.append({
+                    'Code': code,
+                    'Value': value,
+                    'LastModified': last_modified,
+                    'IsDisabled': id_disabled
+                })
 
-        # Convertir la lista de resultados a un DataFrame de pandas
-        df = pd.DataFrame(position_types)
+            # Convertir la lista de resultados a un DataFrame de pandas
+            df = pd.DataFrame(position_types)
 
-        # Verificar si el directorio existe, si no, crearlo
-        if not os.path.exists(output_parquet):
-            os.makedirs(output_parquet)
+            # Verificar si el directorio existe, si no, crearlo
+            if not os.path.exists(output_parquet):
+                os.makedirs(output_parquet)
 
-        # Obtener la fecha actual y formatearla como YYYY-MM-DD
-        timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+            # Obtener la fecha actual y formatearla como YYYY-MM-DD
+            timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 
-        # Guardar los datos en un archivo Parquet con la fecha y
-        # hora en el nombre
-        path = os.path.join(
-            output_parquet, f'{timestamp}_position_types_data.parquet')
-        df.to_parquet(path, index=False)
-        print(f"Datos extraídos y guardados en {path}")
-        return path
-    else:
-        print("No se han recibido datos.")
-        return None
+            # Guardar los datos en un archivo Parquet con la fecha y
+            # hora en el nombre
+            path = os.path.join(
+                output_parquet, f'{timestamp}_position_types_data.parquet')
+            df.to_parquet(path, index=False)
+            logger.info(f"Datos extraídos y guardados en {path}")
+            return path
+        else:
+            logger.warning("No se han recibido datos.")
+            return None
+    except Exception as e:
+        logger.error(f"Error durante la extracción de datos de tipos de posición: {str(e)}")
+        raise AirflowException(f"Error durante la extracción de datos de tipos de posición: {str(e)}")
+
 
 
 # if __name__ == '__main__':

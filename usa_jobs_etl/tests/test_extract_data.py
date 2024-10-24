@@ -1,3 +1,4 @@
+from airflow.exceptions import AirflowException
 from unittest.mock import patch
 import pandas as pd
 import os
