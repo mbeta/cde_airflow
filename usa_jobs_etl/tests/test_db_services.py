@@ -1,4 +1,3 @@
-from airflow.exceptions import AirflowException
 from unittest.mock import MagicMock
 from plugins.etl.db_services import get_redshift_connection, create_table, get_organization_codes_by_names
 
