@@ -1,4 +1,3 @@
-from airflow.exceptions import AirflowException
 import logging
 from sqlalchemy import create_engine
 import os
@@ -13,31 +12,22 @@ def get_redshift_connection():
     redshift_conn_string = os.getenv('REDSHIFT_CONN_STRING')
     if not redshift_conn_string:
         logger.error("'REDSHIFT_CONN_STRING' no está definida o está vacía.")
-        raise AirflowException("'REDSHIFT_CONN_STRING' no está definida o está vacía.")
+        raise ValueError("'REDSHIFT_CONN_STRING' no está definida o está vacía.")
     
-    try:
-        engine = create_engine(redshift_conn_string)
-        conn = engine.connect()
-        logger.info("Conexión exitosa a Redshift.")
-        return conn
-    except Exception as e:
-        logger.error(f"Error al conectar con Redshift: {e}")
-        raise AirflowException(f"Error al conectar con Redshift: {e}")
-
+    engine = create_engine(redshift_conn_string)
+    conn = engine.connect()
+    logger.info("Conexión exitosa a Redshift.")
+    return conn
 
 def create_table(table_name, create_table_sql):
     """Función genérica para crear una tabla."""
     schema = f'"{os.getenv("REDSHIFT_SCHEMA")}"'
     create_table_sql = create_table_sql.format(schema=schema)
     conn = get_redshift_connection()
-    try:
-        conn.execute(create_table_sql)
-        logger.info(f"Tabla '{table_name}' creada o ya existía.")
-    except Exception as e:
-        logger.error(f"Error al crear la tabla '{table_name}': {e}")
-        raise AirflowException(f"Error al crear la tabla '{table_name}': {e}")
-    finally:
-        conn.close()
+    
+    conn.execute(create_table_sql)
+    logger.info(f"Tabla '{table_name}' creada o ya existía.")
+    conn.close()
 
 
 def create_all_tables():
@@ -95,11 +85,7 @@ def create_all_tables():
     }
 
     for table_name, create_sql in tables.items():
-        try:
-            create_table(table_name, create_sql)
-        except AirflowException as e:
-            logger.error(f"No se pudo crear la tabla {table_name}: {e}")
-            raise
+        create_table(table_name, create_sql)
 
 
 def drop_schema():
@@ -115,25 +101,21 @@ def drop_schema():
         WHERE table_schema = '{schema}';
     """
     conn = get_redshift_connection()
-    try:
-        result = conn.execute(get_tables_sql)
-        tables = result.fetchall()
+    
+    result = conn.execute(get_tables_sql)
+    tables = result.fetchall()
 
-        if not tables:
-            logger.info(f"No hay tablas en el esquema '{schema}'.")
-            return
+    if not tables:
+        logger.info(f"No hay tablas en el esquema '{schema}'.")
+        return
 
-        # Eliminar cada tabla
-        for table in tables:
-            drop_table_sql = f"DROP TABLE IF EXISTS \"{schema}\".{table[0]} CASCADE;"
-            logger.info(f"Ejecutando: {drop_table_sql}")
-            conn.execute(drop_table_sql)
-            logger.info(f"Tabla '{table[0]}' eliminada exitosamente.")
-    except Exception as e:
-        logger.error(f"Error al eliminar las tablas en el esquema '{schema}': {e}")
-        raise AirflowException(f"Error al eliminar las tablas: {e}")
-    finally:
-        conn.close()
+    # Eliminar cada tabla
+    for table in tables:
+        drop_table_sql = f"DROP TABLE IF EXISTS \"{schema}\".{table[0]} CASCADE;"
+        logger.info(f"Ejecutando: {drop_table_sql}")
+        conn.execute(drop_table_sql)
+        logger.info(f"Tabla '{table[0]}' eliminada exitosamente.")
+    conn.close()
 
 
 def get_organization_codes_by_names(names):
@@ -147,21 +129,18 @@ def get_organization_codes_by_names(names):
     """
     conn = get_redshift_connection()
     schema = f'"{os.getenv("REDSHIFT_SCHEMA")}"'
-    try:
-        # construimos query
-        names_placeholder = ', '.join([f"'{name}'" for name in names])
-        query = f"""
-            SELECT code, name
-            FROM {schema}.dim_organization
-            WHERE name IN ({names_placeholder})
-        """
-        # Ejecutamos la consulta
-        result = conn.execute(query)
-        organization_map = {row['name']: row['code'] for row in result}
-        logger.info(f"Códigos de organización obtenidos para los nombres: {names}")
-        return organization_map
-    except Exception as e:
-        logger.error(f"Error al obtener códigos de organización: {e}")
-        raise AirflowException(f"Error al obtener códigos de organización: {e}")
-    finally:
-        conn.close()
+    # construimos query
+    names_placeholder = ', '.join([f"'{name}'" for name in names])
+    query = f"""
+        SELECT code, name
+        FROM {schema}.dim_organization
+        WHERE name IN ({names_placeholder})
+    """
+    # Ejecutamos la consulta
+    result = conn.execute(query)
+    organization_map = {row['name']: row['code'] for row in result}
+    logger.info(f"Códigos de organización obtenidos para los nombres: {names}")
+    
+    conn.close()
+    
+    return organization_map
