@@ -1,37 +1,54 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
+from airflow.exceptions import AirflowException 
 from plugins.etl import extract_data, transform_data, load_to_redshift
 from datetime import datetime
 import os
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 DATA_TEMP = os.getenv('DATA_TEMP')
 
 def history_job_category(fecha_contexto):
-    print(f'{fecha_contexto}: Se inicia carga HISTORICA de Dimension Job Category')
-    data_path = extract_data.extract_data_job_categories('', DATA_TEMP)
-    print(data_path)
-    if(data_path):
-        transformed_data_parquet = transform_data.transform_data_category(data_path)
-        load_to_redshift.load_categories_redshift(transformed_data_parquet)
+    try:
+        logger.info(f'{fecha_contexto}: Se inicia carga HISTORICA de Dimension Job Category')
+        data_path = extract_data.extract_data_job_categories('', DATA_TEMP)
+        logger.info(data_path)
+        if(data_path):
+            transformed_data_parquet = transform_data.transform_data_category(data_path)
+            load_to_redshift.load_categories_redshift(transformed_data_parquet)
+    except Exception as e:
+        logger.error(f'Error en el proceso HISTORY - ETL de Job Category: {str(e)}')
+        raise AirflowException(f'Fallo en el proceso HISTORY - ETL de Job Category: {str(e)}')
 
 def history_position_types(fecha_contexto):
-    print(f'{fecha_contexto}: Se inicia carga HISTORICA de Dimension Position Types')
-    data_path = extract_data.extract_data_position_type('', DATA_TEMP)
-    print(data_path)
-    if(data_path):
-        transformed_data_parquet = transform_data.transform_data_position_types(data_path)
-        load_to_redshift.load_position_types_redshift(transformed_data_parquet)
+    try:
+        logger.info(f'{fecha_contexto}: Se inicia carga HISTORICA de Dimension Position Types')
+        data_path = extract_data.extract_data_position_type('', DATA_TEMP)
+        logger.info(data_path)
+        if(data_path):
+            transformed_data_parquet = transform_data.transform_data_position_types(data_path)
+            load_to_redshift.load_position_types_redshift(transformed_data_parquet)
+    except Exception as e:
+        logger.error(f'Error en el proceso HISTORY - ETL de Position Types: {str(e)}')
+        raise AirflowException(f'Fallo en el proceso HISTORY - ETL de Position Types: {str(e)}')
     
     
 
 def history_organizations(fecha_contexto):
-    print(f'{fecha_contexto}: Se inicia carga HISTORICA de Dimension Organizations')
-    data_path = extract_data.extract_data_organization('', DATA_TEMP)
-    print(data_path)
-    if(data_path):
-        transformed_data_parquet = transform_data.transform_data_organization(data_path)
-        load_to_redshift.load_organization_redshift(transformed_data_parquet)
+    try:
+        logger.info(f'{fecha_contexto}: Se inicia carga HISTORICA de Dimension Organizations')
+        data_path = extract_data.extract_data_organization('', DATA_TEMP)
+        logger.info(data_path)
+        if(data_path):
+            transformed_data_parquet = transform_data.transform_data_organization(data_path)
+            load_to_redshift.load_organization_redshift(transformed_data_parquet)
+    except Exception as e:
+        logger.error(f'Error en el proceso HISTORY - ETL de Organizarions: {str(e)}')
+        raise AirflowException(f'Fallo en el proceso HISTORY - ETL de Organizations: {str(e)}')
     
     
 with DAG(
