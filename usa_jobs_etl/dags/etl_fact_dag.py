@@ -116,8 +116,8 @@ with DAG(
     },
     description='ETL para extraer datos de Usa Jobs, transformar y cargar en Redshift',
     schedule_interval='@daily',
-    start_date=datetime(2024, 10, 7),
-    catchup=True,#para backfill
+    start_date= datetime(2024, 10, 24),
+    catchup=False,#para backfill
 ) as dag:
    
     #Task para esperar Dag de dimensiones
