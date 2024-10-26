@@ -6,7 +6,7 @@ from airflow.models import DagRun
 from airflow import settings
 from airflow.exceptions import AirflowException 
 from datetime import datetime, timedelta
-from plugins.etl import extract_data, transform_data, load_to_redshift
+from plugins.etl import db_services, extract_data, transform_data, load_to_redshift
 import os
 import logging
 
@@ -14,6 +14,16 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 DATA_TEMP = os.getenv('DATA_TEMP')
+
+def control_schema_func():
+    #Se crea tablas si no existen
+    logger.info("Se crea tabla Jobs si no existe")
+    try:
+        db_services.create_job_table()
+    except Exception as e:
+        logger.error(f'Error en el proceso Control schema - ETL de Jobs: {str(e)}')
+        raise AirflowException(f'Fallo en el proceso Control schema  - ETL de Jobs: {str(e)}')
+
 
 def extract_data_func(**kwargs):
     output_parquet = kwargs['output_parquet']
@@ -122,8 +132,15 @@ with DAG(
         allowed_states=['success'],  # Espera a que el dag esté en estado de 'success'
         failed_states=['failed']  # Se detendrá si dag falla o es saltado
     )
+    
+    # Task 1: Control Schema
+    control_schema_task = PythonOperator(
+        task_id='control_schema',
+        python_callable=control_schema_func,
+        op_kwargs={},
+    )
 
-    # Task 1: Extract data
+    # Task 2: Extract data
     extract_data_task = PythonOperator(
         task_id='extract_data',
         python_callable=extract_data_func,
@@ -132,14 +149,14 @@ with DAG(
                    'fecha_contexto': '{{ ds }}'},
     )
 
-    # Task 2: Transform data
+    # Task 3: Transform data
     transform_data_task = PythonOperator(
         task_id='transform_data',
         python_callable=transform_data_func,
         op_kwargs={},
     )
 
-    # Task 3: Load data into Redshift
+    # Task 4: Load data into Redshift
     load_data_task = PythonOperator(
         task_id='load_data',
         python_callable=load_data_func,
@@ -148,4 +165,4 @@ with DAG(
 
 
 # Definir dependencias
-wait_for_dimensions >> extract_data_task >> transform_data_task >> load_data_task
+wait_for_dimensions >> control_schema_task >> extract_data_task >> transform_data_task >> load_data_task

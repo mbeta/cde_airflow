@@ -125,6 +125,9 @@ Pasos:
 3. ejecutar: docker-compose up airflow-init
 4. docker-compose up
 5. Abrir navegador en http://localhost:8080/home
+6. Login a AirFlow:
+    User: airflow
+    Contraseña: airflow
 
 #### Deterner Airflow
 Debera ejecutar:

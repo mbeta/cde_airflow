@@ -23,7 +23,7 @@ def transform_data_jobs(parquet_file: str):
     # Leer el archivo Parquet
     logger.info(parquet_file)
     df = pd.read_parquet(parquet_file)
-    logger.info("Columnas en el DataFrame:", df.columns.tolist())
+    logger.info(f"Columnas en el DataFrame: {df.columns.tolist()}")
 
     # Buscamos los codigos de organization que necesitaremos
     unique_organization_names = df['OrganizationName'].unique().tolist()
@@ -44,24 +44,18 @@ def transform_data_jobs(parquet_file: str):
         # Buscamos code segun DepartmentName
         'department_code': df['DepartmentName'].map(organization_map),
         'job_category_code': df['JobCategoryCode'],
-        'position_start_date': pd.to_datetime(df['PositionStartDate'],
-                                              errors='coerce'),
-        'position_end_date': pd.to_datetime(df['PositionEndDate'],
-                                            errors='coerce'),
-        'publication_start_date': pd.to_datetime(df['PublicationStartDate'],
-                                                 errors='coerce'),
-        'application_close_date': pd.to_datetime(df['ApplicationCloseDate'],
-                                                 errors='coerce'),
+        'position_start_date': pd.to_datetime(df['PositionStartDate'], errors='coerce'),
+        'position_end_date': pd.to_datetime(df['PositionEndDate'], errors='coerce'),
+        'publication_start_date': pd.to_datetime(df['PublicationStartDate'], errors='coerce'),
+        'application_close_date': pd.to_datetime(df['ApplicationCloseDate'], errors='coerce'),
         'minimum_salary': df['MinSalary'].astype(float),
         'maximum_salary': df['MaxSalary'].astype(float),
         'rate_interval_description': df['RateIntervalDescription'],
         'position_type_code': df['PositionTypeCode'],
         'detail_position_type': df['DetailPositionType'],
         'version_date': datetime.now(),
-        'duration': (pd.to_datetime(df['PositionEndDate'],
-                                    errors='coerce') -
-                     pd.to_datetime(df['PositionStartDate'],
-                                    errors='coerce')).dt.days
+        'duration': (pd.to_datetime(df['PositionEndDate'], errors='coerce') -
+                     pd.to_datetime(df['PositionStartDate'], errors='coerce')).dt.days
     })
     return fact_job_postings
 
@@ -83,7 +77,7 @@ def transform_data_organization(parquet_file: str):
     # Leer el archivo Parquet
     logger.info(parquet_file)
     df = pd.read_parquet(parquet_file)
-    logger.info("Columnas en el DataFrame:", df.columns.tolist())
+    logger.info(f"Columnas en el DataFrame: {df.columns.tolist()}")
 
     # Preparar la tabla de hechos: FactJobPostings
     dim_organization_postings = pd.DataFrame({
@@ -113,7 +107,7 @@ def transform_data_category(parquet_file: str):
     # Leer el archivo Parquet
     logger.info(parquet_file)
     df = pd.read_parquet(parquet_file)
-    logger.info("Columnas en el DataFrame:", df.columns.tolist())
+    logger.info(f"Columnas en el DataFrame: {df.columns.tolist()}")
 
     # Preparar la tabla de hechos: FactJobPostings
     dim_job_category_postings = pd.DataFrame({
@@ -143,7 +137,7 @@ def transform_data_position_types(parquet_file: str):
     # Leer el archivo Parquet
     logger.info(parquet_file)
     df = pd.read_parquet(parquet_file)
-    logger.info("Columnas en el DataFrame:", df.columns.tolist())
+    logger.info(f"Columnas en el DataFrame: {df.columns.tolist()}")
 
     # Preparar la tabla de hechos: FactJobPostings
     dim_job_position_types_postings = pd.DataFrame({
