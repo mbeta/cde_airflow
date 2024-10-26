@@ -110,7 +110,11 @@ Se debera crear un archivo .env en la raiz del proyecto (dentro de /usa_jobs_etl
     AUTHORIZATION_KEY=(Api Key otorgado por USAJobs)
     HOST=data.usajobs.go
     REDSHIFT_SCHEMA=(Schema de la DB Redshift)
-    REDSHIFT_CONN_STRING=(String de conexion de la DB Redshift)
+    REDSHIFT_USER= (Usuario para conexion de la base de datos)
+    REDSHIFT_PASSWORD= (Contraseña para conexion de la base de datos)
+    REDSHIFT_SERVER= (Servidor de la base de datos)
+    REDSHIFT_DB= (Nombre de la base de datos)
+    REDSHIFT_PORT= (Puerto de conexion a la base de datos)
     AIRFLOW_UID=(UID de su SO o 50000 por defecto)
     AIRFLOW_GID=0
 

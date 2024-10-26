@@ -53,7 +53,11 @@ x-airflow-common:
     AUTHORIZATION_KEY: ${AUTHORIZATION_KEY}
     HOST: ${HOST}
     REDSHIFT_SCHEMA: ${REDSHIFT_SCHEMA}
-    REDSHIFT_CONN_STRING: ${REDSHIFT_CONN_STRING}
+    REDSHIFT_USER: ${REDSHIFT_USER}
+    REDSHIFT_PASSWORD: ${REDSHIFT_PASSWORD}
+    REDSHIFT_SERVER: ${REDSHIFT_SERVER}
+    REDSHIFT_DB: ${REDSHIFT_DB}
+    REDSHIFT_PORT: ${REDSHIFT_PORT}
     DATA_TEMP: /opt/airflow/data_temp
     # PYTHONPATH: '/opt/airflow/plugins:/opt/airflow/plugins/etl:/opt/airflow/dags'
     PYTHONPATH: '/opt/airflow'
