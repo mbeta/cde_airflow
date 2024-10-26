@@ -1,4 +1,5 @@
 from unittest.mock import MagicMock
+import os
 from plugins.etl.db_services import get_redshift_connection, create_table, get_organization_codes_by_names
 
 
@@ -10,9 +11,16 @@ def test_get_redshift_connection(monkeypatch):
     Args:
         mocker (_type_): Mock
     """
-    # Simulamos la variable de entorno sin exponer credenciales reales
-    monkeypatch.setenv('REDSHIFT_CONN_STRING',
-                       'postgresql://user:password@host:5439/dbname')
+     # Mockeamos os.environ
+    mock_environ = {
+        'REDSHIFT_USER': 'user',
+        'REDSHIFT_PASSWORD': 'password',
+        'REDSHIFT_SERVER': 'host',
+        'REDSHIFT_DB': 'dbname',
+        'REDSHIFT_PORT': '5439'
+    }
+    monkeypatch.setattr(os, 'environ', mock_environ)
+    
     mock_create_engine = MagicMock()
     monkeypatch.setattr('plugins.etl.db_services.create_engine', mock_create_engine)
 
@@ -24,7 +32,7 @@ def test_get_redshift_connection(monkeypatch):
     connection = get_redshift_connection()
 
     mock_create_engine.assert_called_once_with(
-        'postgresql://user:password@host:5439/dbname', isolation_level='READ COMMITTED')
+        'redshift+psycopg2://user:password@host:5439/dbname', isolation_level='READ COMMITTED')
     mock_create_engine.return_value.connect.assert_called_once()
     assert connection == mock_connection
 

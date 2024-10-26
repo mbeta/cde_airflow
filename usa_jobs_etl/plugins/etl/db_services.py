@@ -69,12 +69,20 @@ def query_create_dim_position_type():
         """
 
 def get_redshift_connection():
-    redshift_conn_string = os.getenv('REDSHIFT_CONN_STRING')
-    if not redshift_conn_string:
+    user = os.getenv('REDSHIFT_USER')
+    password = os.getenv('REDSHIFT_PASSWORD')
+    server = os.getenv('REDSHIFT_SERVER')
+    db = os.getenv('REDSHIFT_DB')
+    port = os.getenv('REDSHIFT_PORT')
+
+    connection_string = f'redshift+psycopg2://{user}:{password}@{server}:{port}/{db}'
+
+    #redshift_conn_string = os.getenv('REDSHIFT_CONN_STRING')
+    if not connection_string:
         logger.error("'REDSHIFT_CONN_STRING' no está definida o está vacía.")
         raise ValueError("'REDSHIFT_CONN_STRING' no está definida o está vacía.")
     
-    engine = create_engine(redshift_conn_string, isolation_level='READ COMMITTED')
+    engine = create_engine(connection_string, isolation_level='READ COMMITTED')
     conn = engine.connect()
     logger.info("Conexión exitosa a Redshift.")
     return conn
