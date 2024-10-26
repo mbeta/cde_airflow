@@ -2,6 +2,10 @@
 import requests
 import os
 from dotenv import load_dotenv
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Cargar las variables de entorno desde el archivo .env
 load_dotenv()
@@ -36,8 +40,8 @@ def get_data_jobs(keyword: str, page: int, date_posted: int = 0) -> dict:
     url = f"""https://data.usajobs.gov/api/search?Keyword={keyword}&DatePosted={date_posted}&Page={page}&ResultsPerPage=500"""
     headers = build_headers()
 
-    print(f"Consultando la página {page} de resultados...")
-    print(f"URL: {url}")  # Debug
+    logger.info(f"Consultando la página {page} de resultados...")
+    logger.info(f"URL: {url}")  # Debug
 
     try:
         response = requests.get(url, headers=headers, timeout=10)
@@ -46,13 +50,13 @@ def get_data_jobs(keyword: str, page: int, date_posted: int = 0) -> dict:
         return response.json()
     except requests.exceptions.Timeout:
         # Captura exceptions tipo Timeout
-        print("Error: La solicitud ha superado el tiempo de espera.")
+        logger.error("Error: La solicitud ha superado el tiempo de espera.")
+        raise
 
     except requests.exceptions.RequestException as e:
         # Captura exceptions de Request
-        print(f"Error en la solicitud: {e}")
-
-    return None
+        logger.error(f"Error en la solicitud servicio API Jobs: {e}")
+        raise
 
 
 def fetch_all_pages(keyword: str, date_posted: int = 0):
@@ -75,7 +79,7 @@ def fetch_all_pages(keyword: str, date_posted: int = 0):
 
     # Recupera el numero total de paginas
     total_pages = int(response['SearchResult']['UserArea']['NumberOfPages'])
-    print(f"Paginas totales a consultar: {total_pages}")
+    logger.info(f"Paginas totales a consultar: {total_pages}")
 
     # Se acumula resultado de primera pagina
     all_results.extend(response['SearchResult']['SearchResultItems'])
@@ -104,6 +108,7 @@ def get_data_jobs_categories(lastmodified: str) -> dict:
     dict : Respuesta en formato JSON o None si hay un error.
     """
     url = f"""https://data.usajobs.gov/api/codelist/occupationalseries?lastmodified={lastmodified}"""
+    logger.info(f"URL: {url}")
     headers = build_headers()
 
     try:
@@ -113,12 +118,12 @@ def get_data_jobs_categories(lastmodified: str) -> dict:
         return response.json()
     except requests.exceptions.Timeout:
         # Captura exceptions tipo Timeout
-        print("Error: Solicitud JobCategory ha superado el tiempo de espera.")
+        logger.error("Error: Solicitud JobCategory ha superado el tiempo de espera.")
+        raise
     except requests.exceptions.RequestException as e:
         # Captura exceptions de Request
-        print(f"Error en la solicitud: {e}")
-
-    return None
+        logger.error(f"Error en la solicitud API JobCategory: {e}")
+        raise
 
 
 def get_data_organization(lastmodified: str) -> dict:
@@ -134,7 +139,7 @@ def get_data_organization(lastmodified: str) -> dict:
     dict : Respuesta en formato JSON o None si hay un error.
     """
     url = f"""https://data.usajobs.gov/api/codelist/agencysubelements?lastmodified={lastmodified}"""
-    print(f"url: {url}")
+    logger.info(f"URL: {url}")
     headers = build_headers()
 
     try:
@@ -144,12 +149,12 @@ def get_data_organization(lastmodified: str) -> dict:
         return response.json()
     except requests.exceptions.Timeout:
         # Captura exceptions tipo Timeout
-        print("Error: Solicitud Organization ha superado el tiempo de espera.")
+        logger.error("Error: Solicitud Organization ha superado el tiempo de espera.")
+        raise
     except requests.exceptions.RequestException as e:
         # Captura exceptions de Request
-        print(f"Error en la solicitud: {e}")
-
-    return None
+        logger.error(f"Error en la solicitud: {e}")
+        raise
 
 
 def get_data_position_types(lastmodified: str) -> dict:
@@ -165,6 +170,7 @@ def get_data_position_types(lastmodified: str) -> dict:
     dict : Respuesta en formato JSON o None si hay un error.
     """
     url = f"""https://data.usajobs.gov/api/codelist/positionofferingtypes?lastmodified={lastmodified}"""
+    logger.info(f"URL: {url}")
     headers = build_headers()
 
     try:
@@ -174,12 +180,13 @@ def get_data_position_types(lastmodified: str) -> dict:
         return response.json()
     except requests.exceptions.Timeout:
         # Captura exceptions tipo Timeout
-        print("Error: Solicitud PositionTypes ha superado el \
-            tiempo de espera.")
+        logger.error("Error: Solicitud PositionTypes ha superado el tiempo de espera.")
+        raise
     except requests.exceptions.RequestException as e:
         # Captura exceptions de Request
-        print(f"Error en la solicitud: {e}")
-    return None
+        logger.error(f"Error en la solicitud API PositionTypes: {e}")
+        raise
+
 
 
 def fetch_organizations(lastmodified: str):
@@ -193,7 +200,8 @@ def fetch_organizations(lastmodified: str):
     Returns:
     list : Lista con todas las Organizations en JSON.
     """
-    print(f"Llamada API Organizaciones - Fecha de ultima modificacion: {lastmodified}")
+    logger.info(f"Llamada API Organizaciones - Fecha de ultima modificacion: {lastmodified}")
+
     response = get_data_organization(lastmodified)
 
     # Retorna resultado de solo  listado de organizaciones.
@@ -211,7 +219,7 @@ def fetch_job_categories(lastmodified: str):
     Returns:
     list : Lista con todas las Categorias  resultantes en JSON.
     """
-
+    logger.info(f"Llamada API Categorias - Fecha de ultima modificacion: {lastmodified}")
     response = get_data_jobs_categories(lastmodified)
 
     # Retorna resultado de solo  listado de categorias.
@@ -230,7 +238,7 @@ def fetch_position_types(lastmodified: str):
     list : Lista con todas las Tipos de posiciones ofrecidas
     resultantes en JSON.
     """
-
+    logger.info(f"Llamada API Tipos de posiciones - Fecha de ultima modificacion: {lastmodified}")
     response = get_data_position_types(lastmodified)
 
     # Retorna resultado de solo  listado de categorias.

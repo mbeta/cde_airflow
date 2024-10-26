@@ -4,9 +4,14 @@ from airflow.operators.python import PythonOperator
 from airflow.sensors.external_task import ExternalTaskSensor
 from airflow.models import DagRun
 from airflow import settings
+from airflow.exceptions import AirflowException 
 from datetime import datetime, timedelta
 from plugins.etl import extract_data, transform_data, load_to_redshift
 import os
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 DATA_TEMP = os.getenv('DATA_TEMP')
 
@@ -15,7 +20,7 @@ def extract_data_func(**kwargs):
     keyword = kwargs['keyword']
     fecha_contexto =kwargs['fecha_contexto']
     
-    print(f'Fecha contexto: {fecha_contexto}')
+    logger.info(f'Fecha contexto: {fecha_contexto}')
     #Descontamos un dia un quitamos HH:mm:ss
     date_control = (datetime.strptime(fecha_contexto, '%Y-%m-%d') - timedelta(days=1)).strftime('%Y-%m-%d')
     # Calculamos la cantidad de dias de la fecha que se quiere consultar con la fecha actual
@@ -23,34 +28,46 @@ def extract_data_func(**kwargs):
     # Para no procesar dias incompletos se descuenta 1 dia a la fecha y se descartan las publicaciones del dia
     # Es decir que todos los dias se procasaran los posteos del dia ANTERIOR
     date_posted = ((datetime.now() - datetime.strptime(date_control, '%Y-%m-%d')).days)
-    print(f"Diferencia en días: {date_posted}")
+    logger.info(f"Diferencia en días: {date_posted}")
     if date_posted > 60:
         raise AirflowSkipException(f"El DAG se está ejecutando con una fecha mayor a 60 días ({date_posted} días). Saltando ejecución.")
     
-    print(f'Parametros de extract_data_jobs:\n' 
+    logger.info(f'Parametros de extract_data_jobs:\n' 
           f'Palabra Clave: {keyword},\n' 
           f'Path para parquet: {output_parquet}, \n' 
           f'Cantidad en días: {date_posted}, \n' 
           f'Control de fecha: {date_control}')
     
-    return extract_data.extract_data_jobs(keyword,output_parquet, date_posted, date_control)
+    try:
+        return extract_data.extract_data_jobs(keyword,output_parquet, date_posted, date_control)
+    except Exception as e:
+        logger.error(f'Error en el proceso EXTRACT - ETL de Jobs: {str(e)}')
+        raise AirflowException(f'Fallo en el proceso EXTRACT - ETL de Jobs: {str(e)}')
 
 def transform_data_func(**kwargs):
     parquet_file = kwargs['ti'].xcom_pull(task_ids='extract_data')
     if(parquet_file):
-        print(f'parquet_file: {parquet_file}')
-        return transform_data.transform_data_jobs(parquet_file)
+        logger.info(f'parquet_file: {parquet_file}')
+        try:
+            return transform_data.transform_data_jobs(parquet_file)
+        except Exception as e:
+            logger.error(f'Error en el proceso TRANSFORM - ETL de Jobs: {str(e)}')
+            raise AirflowException(f'Fallo en el proceso TRANSFORM - ETL de Jobs: {str(e)}')
     else:
-        print(f'Sin datos a transformar')
+        logger.info(f'Sin datos a transformar')
         return None
 
 def load_data_func(**kwargs):
     data_frame = kwargs['ti'].xcom_pull(task_ids='transform_data')
     if data_frame is not None and not data_frame.empty:
-        print(f'Cantidad reg. data_frame: {len(data_frame)}')
-        load_to_redshift.load_jobs_redshift(data_frame)
+        logger.info(f'Cantidad reg. data_frame: {len(data_frame)}')
+        try:
+            load_to_redshift.load_jobs_redshift(data_frame)
+        except Exception as e:
+            logger.error(f'Error en el proceso LOAD - ETL de Jobs: {str(e)}')
+            raise AirflowException(f'Fallo en el proceso LOAD - ETL de Jobs: {str(e)}')
     else:
-        print(f'Sin datos a cargar en Redshift')
+        logger.info(f'Sin datos a cargar en Redshift')
 
 #Funcion para controlar si el DAG de dimensiones se ejecuto correctamente
 def get_execution_date(dt, **kwargs):
@@ -70,8 +87,8 @@ def get_execution_date(dt, **kwargs):
     time_difference = current_time - dr.execution_date
     
     # Imprimir información útil para el debug
-    print(f"Última ejecución del DAG {kwargs['task'].external_dag_id}: {dr.execution_date}")
-    print(f"Diferencia en horas: {time_difference.total_seconds() / 3600}")
+    logger.info(f"Última ejecución del DAG {kwargs['task'].external_dag_id}: {dr.execution_date}")
+    logger.info(f"Diferencia en horas: {time_difference.total_seconds() / 3600}")
     
     # Verificar si han pasado más de 24 horas
     if time_difference > timedelta(hours=24):

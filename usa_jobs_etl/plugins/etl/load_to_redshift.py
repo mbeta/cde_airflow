@@ -2,9 +2,13 @@ import pandas as pd
 from sqlalchemy import create_engine
 import os
 from dotenv import load_dotenv
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 
 load_dotenv()
-
 
 def load_jobs_redshift(df: pd.DataFrame, batch_size: int = 50):
     """
@@ -16,17 +20,16 @@ def load_jobs_redshift(df: pd.DataFrame, batch_size: int = 50):
     df : pd.DataFrame : El DataFrame con los datos a cargar.
     """
 
-    print("Se inicia Proceso de UPSERT para la tabla JOBS")
+    logger.info("Se inicia Proceso de UPSERT para la tabla JOBS")
     # Crear la conexión a Redshift
     redshift_conn_string = os.getenv('REDSHIFT_CONN_STRING')
-    print(f'load_jobs: {redshift_conn_string}')
     schema = f'"{os.getenv('REDSHIFT_SCHEMA')}"'
     engine = create_engine(redshift_conn_string,  isolation_level='READ COMMITTED')
 
     # Iniciar la conexión y transacción
     with engine.connect() as conn:
         total_rows = len(df)
-        print(f'Total de registros a tratar: {total_rows}')
+        logger.info(f'Total de registros a tratar: {total_rows}')
         for start in range(0, total_rows, batch_size):
             end = min(start + batch_size, total_rows)
             df_batch = df.iloc[start:end]
@@ -58,7 +61,13 @@ def load_jobs_redshift(df: pd.DataFrame, batch_size: int = 50):
                 query_check = f"""
                     SELECT COUNT(*) FROM {schema}.jobs WHERE object_id = %s
                 """
-                result = conn.execute(query_check, (object_id)).scalar()
+                
+                try:
+                    result = conn.execute(query_check, (object_id)).scalar()
+                except Exception as e:
+                    # Captura errores inesperados y los propaga
+                    logging.error(f"Error inesperado en query jobs REDSHIFT: {e}")
+                    raise
 
                 if result > 0:
                     # Si el registro existe, agregar un UPDATE a la lista
@@ -97,9 +106,16 @@ def load_jobs_redshift(df: pd.DataFrame, batch_size: int = 50):
                         is_reposted = %s, duration = %s
                     WHERE object_id = %s
                 """
-                conn.execute(query_update, update_queries)
+                
+                
+                try:
+                    conn.execute(query_update, update_queries)
+                except Exception as e:
+                    # Captura errores inesperados y los propaga
+                    logging.error(f"Error inesperado en query UPDATE jobs REDSHIFT: {e}")
+                    raise
 
-                print(f"{len(update_queries)} registros actualizados en el lote {start // batch_size + 1}.")
+                logger.info(f"{len(update_queries)} registros actualizados en el lote {start // batch_size + 1}.")
 
             # Ejecutar todos los inserts en una sola operación
             if insert_queries:
@@ -114,10 +130,16 @@ def load_jobs_redshift(df: pd.DataFrame, batch_size: int = 50):
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
                             %s, %s, %s, %s, %s, %s)
                 """
-                conn.execute(query_insert, insert_queries)
+                
+                try:
+                    conn.execute(query_insert, insert_queries)
+                except Exception as e:
+                    # Captura errores inesperados y los propaga
+                    logging.error(f"Error inesperado en query INSERT jobs REDSHIFT: {e}")
+                    raise
 
-                print(f"{len(insert_queries)} registros insertados en el lote {start // batch_size + 1}.")
-    print("Proceso de UPSERT para la tabla JOBS completado.")
+                logger.info(f"{len(insert_queries)} registros insertados en el lote {start // batch_size + 1}.")
+    logger.info("Proceso de UPSERT para la tabla JOBS completado.")
 
 
 def load_organization_redshift(df: pd.DataFrame, batch_size: int = 50):
@@ -130,10 +152,9 @@ def load_organization_redshift(df: pd.DataFrame, batch_size: int = 50):
     df : pd.DataFrame : El DataFrame con los datos a cargar.
     """
 
-    print("Se inicia Proceso de UPSERT para la dimension ORGANIZATION")
+    logger.info("Se inicia Proceso de UPSERT para la dimension ORGANIZATION")
     # Crear la conexión a Redshift
     redshift_conn_string = os.getenv('REDSHIFT_CONN_STRING')
-    print(f'load_organization: {redshift_conn_string}')
     schema = f'"{os.getenv('REDSHIFT_SCHEMA')}"'
     engine = create_engine(redshift_conn_string)
 
@@ -144,7 +165,7 @@ def load_organization_redshift(df: pd.DataFrame, batch_size: int = 50):
     # Iniciar la conexión y transacción
     with engine.connect() as conn:
         total_rows = len(df)
-        print(f'Total de registros a tratar: {total_rows}')
+        logger.info(f'Total de registros a tratar: {total_rows}')
         #for _, row in df.iterrows():
         for start in range(0, total_rows, batch_size):
             end = min(start + batch_size, total_rows)
@@ -167,7 +188,14 @@ def load_organization_redshift(df: pd.DataFrame, batch_size: int = 50):
                         SELECT COUNT(*) FROM {schema}.dim_organization
                                 WHERE code = %s
                         """
-                result = conn.execute(query_check, (code)).scalar()
+                
+                
+                try:
+                    result = conn.execute(query_check, (code)).scalar()
+                except Exception as e:
+                    # Captura errores inesperados y los propaga
+                    logging.error(f"Error inesperado en query dim_organization REDSHIFT: {e}")
+                    raise
 
                 if result > 0:
                     # Si el registro existe, agregar un UPDATE a la lista
@@ -188,7 +216,13 @@ def load_organization_redshift(df: pd.DataFrame, batch_size: int = 50):
                                 is_disabled = %s
                     WHERE code = %s
                 """
-                conn.execute(query_update, update_queries)
+                
+                try:
+                    conn.execute(query_update, update_queries)
+                except Exception as e:
+                    # Captura errores inesperados y los propaga
+                    logging.error(f"Error inesperado en query UPDATE dim_organization REDSHIFT: {e}")
+                    raise
 
                 print(f"{len(update_queries)} registros actualizados en el lote {start // batch_size + 1}.")
 
@@ -199,11 +233,17 @@ def load_organization_redshift(df: pd.DataFrame, batch_size: int = 50):
                                                         last_modified, is_disabled)
                     VALUES (%s, %s, %s, %s, %s)
                 """
-                conn.execute(query_insert, insert_queries)
+                
+                try:
+                    conn.execute(query_insert, insert_queries)
+                except Exception as e:
+                    # Captura errores inesperados y los propaga
+                    logging.error(f"Error inesperado en query INSERT dim_organization REDSHIFT: {e}")
+                    raise
 
-                print(f"{len(insert_queries)} registros insertados en el lote {start // batch_size + 1}.")
+                logger.info(f"{len(insert_queries)} registros insertados en el lote {start // batch_size + 1}.")
 
-    print("Proceso de UPSERT para la dimension ORGANIZATION completado.")
+    logger.info("Proceso de UPSERT para la dimension ORGANIZATION completado.")
 
 
 def load_categories_redshift(df: pd.DataFrame, batch_size: int = 50):
@@ -216,21 +256,16 @@ def load_categories_redshift(df: pd.DataFrame, batch_size: int = 50):
     df : pd.DataFrame : El DataFrame con los datos a cargar.
     """
 
-    print("Se inicia Proceso de UPSERT para la dimension JOB CATEGORY")
+    logger.info("Se inicia Proceso de UPSERT para la dimension JOB CATEGORY")
     # Crear la conexión a Redshift
     redshift_conn_string = os.getenv('REDSHIFT_CONN_STRING')
-    print(f'load_categories: {redshift_conn_string}')
     schema = f'"{os.getenv('REDSHIFT_SCHEMA')}"'
     engine = create_engine(redshift_conn_string)
-
-    # # Listas para almacenar los datos de actualización e inserción
-    # update_queries = []
-    # insert_queries = []
 
     # Iniciar la conexión y transacción
     with engine.connect() as conn:
         total_rows = len(df)
-        print(f'Total de registros a tratar: {total_rows}')
+        logger.info(f'Total de registros a tratar: {total_rows}')
         for start in range(0, total_rows, batch_size):
             end = min(start + batch_size, total_rows)
             df_batch = df.iloc[start:end]
@@ -251,7 +286,13 @@ def load_categories_redshift(df: pd.DataFrame, batch_size: int = 50):
                     SELECT COUNT(*) FROM {schema}.dim_job_category
                     WHERE code = %s
                 """
-                result = conn.execute(query_check, (code)).scalar()
+                
+                try:
+                    result = conn.execute(query_check, (code)).scalar()
+                except Exception as e:
+                    # Captura errores inesperados y los propaga
+                    logging.error(f"Error inesperado en query dim_job_category REDSHIFT: {e}")
+                    raise
 
                 if result > 0:
                     # Si el registro existe, agregar un UPDATE a la lista
@@ -272,9 +313,15 @@ def load_categories_redshift(df: pd.DataFrame, batch_size: int = 50):
                         is_disabled = %s
                     WHERE code = %s
                 """
-                conn.execute(query_update, update_queries)
+                
+                try:
+                    conn.execute(query_update, update_queries)
+                except Exception as e:
+                    # Captura errores inesperados y los propaga
+                    logging.error(f"Error inesperado en query UPDATE dim_job_category REDSHIFT: {e}")
+                    raise
 
-                print(f"{len(update_queries)} registros actualizados en el lote {start // batch_size + 1}.")
+                logger.info(f"{len(update_queries)} registros actualizados en el lote {start // batch_size + 1}.")
 
             # Ejecutar todos los inserts en una sola operación
             if insert_queries:
@@ -283,10 +330,16 @@ def load_categories_redshift(df: pd.DataFrame, batch_size: int = 50):
                                                         last_modified, is_disabled)
                     VALUES (%s, %s, %s, %s, %s)
                 """
-                conn.execute(query_insert, insert_queries)
+                
+                try:
+                    conn.execute(query_insert, insert_queries)
+                except Exception as e:
+                    # Captura errores inesperados y los propaga
+                    logging.error(f"Error inesperado en query INSERT dim_job_category REDSHIFT: {e}")
+                    raise
 
-                print(f"{len(insert_queries)} registros insertados en el lote {start // batch_size + 1}.")
-    print("Proceso de UPSERT para la dimension JOB CATEGORY completado.")
+                logger.info(f"{len(insert_queries)} registros insertados en el lote {start // batch_size + 1}.")
+    logger.info("Proceso de UPSERT para la dimension JOB CATEGORY completado.")
 
 
 def load_position_types_redshift(df: pd.DataFrame, batch_size: int = 50):
@@ -299,10 +352,9 @@ def load_position_types_redshift(df: pd.DataFrame, batch_size: int = 50):
     df : pd.DataFrame : El DataFrame con los datos a cargar.
     """
 
-    print("Se inicia Proceso de UPSERT para la dimension POSITION TYPE")
+    logger.info("Se inicia Proceso de UPSERT para la dimension POSITION TYPE")
     # Crear la conexión a Redshift
     redshift_conn_string = os.getenv('REDSHIFT_CONN_STRING')
-    print(f'load_position: {redshift_conn_string}')
     schema = f'"{os.getenv('REDSHIFT_SCHEMA')}"'
     engine = create_engine(redshift_conn_string)
 
@@ -313,7 +365,7 @@ def load_position_types_redshift(df: pd.DataFrame, batch_size: int = 50):
     # Iniciar la conexión y transacción
     with engine.connect() as conn:
         total_rows = len(df)
-        print(f'Total de registros a tratar: {total_rows}')
+        logger.info(f'Total de registros a tratar: {total_rows}')
         for start in range(0, total_rows, batch_size):
             end = min(start + batch_size, total_rows)
             df_batch = df.iloc[start:end]
@@ -333,7 +385,13 @@ def load_position_types_redshift(df: pd.DataFrame, batch_size: int = 50):
                     SELECT COUNT(*) FROM {schema}.dim_position_type
                     WHERE code = %s
                 """
-                result = conn.execute(query_check, (code)).scalar()
+                
+                try:
+                    result = conn.execute(query_check, (code)).scalar()
+                except Exception as e:
+                    # Captura errores inesperados y los propaga
+                    logging.error(f"Error inesperado en query dim_position_type REDSHIFT: {e}")
+                    raise
 
                 if result > 0:
                     # Si el registro existe, agregar un UPDATE a la lista
@@ -353,9 +411,15 @@ def load_position_types_redshift(df: pd.DataFrame, batch_size: int = 50):
                     SET name = %s,  last_modified = %s, is_disabled = %s
                     WHERE code = %s
                 """
-                conn.execute(query_update, update_queries)
+                
+                try:
+                    conn.execute(query_update, update_queries)
+                except Exception as e:
+                    # Captura errores inesperados y los propaga
+                    logging.error(f"Error inesperado en query UPDATE dim_position_type REDSHIFT: {e}")
+                    raise
 
-                print(f"{len(update_queries)} registros actualizados en el lote {start // batch_size + 1}.")
+                logger.info(f"{len(update_queries)} registros actualizados en el lote {start // batch_size + 1}.")
 
             # Ejecutar todos los inserts en una sola operación
             if insert_queries:
@@ -364,7 +428,13 @@ def load_position_types_redshift(df: pd.DataFrame, batch_size: int = 50):
                                             last_modified, is_disabled)
                     VALUES (%s, %s, %s, %s)
                 """
-                conn.execute(query_insert, insert_queries)
+                
+                try:
+                    conn.execute(query_insert, insert_queries)
+                except Exception as e:
+                    # Captura errores inesperados y los propaga
+                    logging.error(f"Error inesperado en query INSERT dim_position_type REDSHIFT: {e}")
+                    raise
 
-                print(f"{len(insert_queries)} registros insertados en el lote {start // batch_size + 1}.")
-    print("Proceso de UPSERT para la dimension POSITION TYPE completado.")
+                logger.info(f"{len(insert_queries)} registros insertados en el lote {start // batch_size + 1}.")
+    logger.info("Proceso de UPSERT para la dimension POSITION TYPE completado.")

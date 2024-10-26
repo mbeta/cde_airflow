@@ -1,7 +1,10 @@
 import pandas as pd
 from datetime import datetime
 from plugins.etl.db_services import  get_organization_codes_by_names
+import logging
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 def transform_data_jobs(parquet_file: str):
     """
@@ -18,9 +21,9 @@ def transform_data_jobs(parquet_file: str):
     y las dimensiones.
     """
     # Leer el archivo Parquet
-    print(parquet_file)
+    logger.info(parquet_file)
     df = pd.read_parquet(parquet_file)
-    print("Columnas en el DataFrame:", df.columns.tolist())
+    logger.info("Columnas en el DataFrame:", df.columns.tolist())
 
     # Buscamos los codigos de organization que necesitaremos
     unique_organization_names = df['OrganizationName'].unique().tolist()
@@ -78,8 +81,9 @@ def transform_data_organization(parquet_file: str):
     """
 
     # Leer el archivo Parquet
+    logger.info(parquet_file)
     df = pd.read_parquet(parquet_file)
-    print("Columnas en el DataFrame:", df.columns.tolist())
+    logger.info("Columnas en el DataFrame:", df.columns.tolist())
 
     # Preparar la tabla de hechos: FactJobPostings
     dim_organization_postings = pd.DataFrame({
@@ -107,8 +111,9 @@ def transform_data_category(parquet_file: str):
     """
 
     # Leer el archivo Parquet
+    logger.info(parquet_file)
     df = pd.read_parquet(parquet_file)
-    print("Columnas en el DataFrame:", df.columns.tolist())
+    logger.info("Columnas en el DataFrame:", df.columns.tolist())
 
     # Preparar la tabla de hechos: FactJobPostings
     dim_job_category_postings = pd.DataFrame({
@@ -136,8 +141,9 @@ def transform_data_position_types(parquet_file: str):
     """
 
     # Leer el archivo Parquet
+    logger.info(parquet_file)
     df = pd.read_parquet(parquet_file)
-    print("Columnas en el DataFrame:", df.columns.tolist())
+    logger.info("Columnas en el DataFrame:", df.columns.tolist())
 
     # Preparar la tabla de hechos: FactJobPostings
     dim_job_position_types_postings = pd.DataFrame({

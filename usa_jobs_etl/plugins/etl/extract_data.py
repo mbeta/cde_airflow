@@ -1,8 +1,12 @@
 
+import logging
 import os
 import pandas as pd
 from plugins.etl.request_apis import fetch_all_pages, fetch_organizations, fetch_job_categories, fetch_position_types
 from datetime import datetime
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 def extract_data_jobs(keyword: str, output_parquet: str,
@@ -24,14 +28,16 @@ def extract_data_jobs(keyword: str, output_parquet: str,
     Returns:
     str : Ruta completa del archivo Parquet generado.
     """
+   
     # Llamar a la función fetch_all_pages para obtener los datos
+    logger.info("Iniciando extracción de datos de JOBS.")
     data = fetch_all_pages(keyword, date_posted)
 
     
     if data:
         # Crear una lista para almacenar los datos de los trabajos
         jobs = []
-        print(f"Cantidad de registros a procesar: {len(data)}")
+        logger.info(f"Cantidad de registros a procesar: {len(data)}")
         if date_control:
             date_control = datetime.strptime(date_control, '%Y-%m-%d').date()
         for item in data:
@@ -47,7 +53,7 @@ def extract_data_jobs(keyword: str, output_parquet: str,
                 # Si la publication_start_date_control es mayor a la de date_control,
                 # ignorar este registro
                 if date_control and \
-                   publication_start_date_control > date_control:
+                publication_start_date_control > date_control:
                         continue
 
             # Extraemos data de la descripción del item
@@ -61,24 +67,16 @@ def extract_data_jobs(keyword: str, output_parquet: str,
             location_display = matched_descriptor['PositionLocationDisplay']
 
             # Informacion de fechas de la publicación
-            publication_start_date = matched_descriptor.get(
-                'PublicationStartDate', None)
-            application_close_date = matched_descriptor.get(
-                'ApplicationCloseDate', None)
-            position_start_date = matched_descriptor.get(
-                'PositionStartDate', None)
-            position_end_date = matched_descriptor.get(
-                'PositionEndDate', None)
+            publication_start_date = matched_descriptor.get('PublicationStartDate', None)
+            application_close_date = matched_descriptor.get('ApplicationCloseDate', None)
+            position_start_date = matched_descriptor.get('PositionStartDate', None)
+            position_end_date = matched_descriptor.get('PositionEndDate', None)
 
             position_remuneration = matched_descriptor[
-                'PositionRemuneration'][0] if matched_descriptor.get(
-                    'PositionRemuneration') else {}
-            min_salary = position_remuneration.get(
-                'MinimumRange', None)
-            max_salary = position_remuneration.get(
-                'MaximumRange', None)
-            rate_interval_description = position_remuneration.get(
-                'Description', None)
+                'PositionRemuneration'][0] if matched_descriptor.get('PositionRemuneration') else {}
+            min_salary = position_remuneration.get('MinimumRange', None)
+            max_salary = position_remuneration.get('MaximumRange', None)
+            rate_interval_description = position_remuneration.get('Description', None)
 
             # Pueden presentarse mas de una categoria por posteo
             job_categories = matched_descriptor.get('JobCategory')
@@ -112,10 +110,10 @@ def extract_data_jobs(keyword: str, output_parquet: str,
                     })
 
         if len(jobs) == 0:
-            print(f'No se encontraron registros a transformar')
+            logger.warning(f'No se encontraron registros a transformar')
             return None
         else:
-            print(f'Se toman {len(jobs)} registros a transformar')
+            logger.info(f'Se toman {len(jobs)} registros a transformar')
             # Convertir la lista de resultados a un DataFrame de pandas
             df = pd.DataFrame(jobs)
 
@@ -130,11 +128,12 @@ def extract_data_jobs(keyword: str, output_parquet: str,
             # y hora en el nombre
             path = os.path.join(output_parquet, f'{timestamp}_jobs_data.parquet')
             df.to_parquet(path, index=False)
-            print(f"Datos extraídos y guardados en {path}")
+            logger.info(f"Datos extraídos y guardados en {path}")
             return path
     else:
-        print("No se han recibido datos.")
+        logger.warning("No se han recibido datos.")
         return None
+
 
 
 def extract_data_organization(lastmodified: str, output_parquet: str):
@@ -152,9 +151,10 @@ def extract_data_organization(lastmodified: str, output_parquet: str):
     str : Ruta completa del archivo Parquet generado.
     """
     # Llamar a la función fetch_organizations para obtener los datos
-    
+    logger.info("Iniciando extracción de datos de organizaciones.")
     data = fetch_organizations(lastmodified)
-    print(f"Cantidad de Registros: {len(data)}")
+    logger.info(f"Cantidad de Registros: {len(data)}")
+
 
     if data:
         # Crear una lista para almacenar los datos de la
@@ -190,10 +190,10 @@ def extract_data_organization(lastmodified: str, output_parquet: str):
         path = os.path.join(
             output_parquet, f'{timestamp}_organizations_data.parquet')
         df.to_parquet(path, index=False)
-        print(f"Datos extraídos y guardados en {path}")
+        logger.info(f"Datos extraídos y guardados en {path}")
         return path
     else:
-        print("No se han recibido datos.")
+        logger.warning("No se han recibido datos.")
         return None
 
 
@@ -211,6 +211,7 @@ def extract_data_job_categories(lastmodified: str, output_parquet: str):
     Returns:
     str : Ruta completa del archivo Parquet generado.
     """
+    logger.info("Iniciando extracción de datos de categorías de empleo.")   
     # Llamar a la función fetch_job_categories para obtener los datos
     data = fetch_job_categories(lastmodified)
     if data:
@@ -246,10 +247,10 @@ def extract_data_job_categories(lastmodified: str, output_parquet: str):
         path = os.path.join(
             output_parquet, f'{timestamp}_job_categories_data.parquet')
         df.to_parquet(path, index=False)
-        print(f"Datos extraídos y guardados en {path}")
+        logger.info(f"Datos extraídos y guardados en {path}")
         return path
     else:
-        print("No se han recibido datos.")
+        logger.warning("No se han recibido datos.")
         return None
 
 
@@ -267,6 +268,8 @@ def extract_data_position_type(lastmodified: str, output_parquet: str):
     Returns:
     str : Ruta completa del archivo Parquet generado.
     """
+    
+    logger.info("Iniciando extracción de datos de categorías de empleo.")
     # Llamar a la función fetch_position_types para obtener los datos
     data = fetch_position_types(lastmodified)
 
@@ -301,10 +304,10 @@ def extract_data_position_type(lastmodified: str, output_parquet: str):
         path = os.path.join(
             output_parquet, f'{timestamp}_position_types_data.parquet')
         df.to_parquet(path, index=False)
-        print(f"Datos extraídos y guardados en {path}")
+        logger.info(f"Datos extraídos y guardados en {path}")
         return path
     else:
-        print("No se han recibido datos.")
+        logger.warning("No se han recibido datos.")
         return None
 
 
