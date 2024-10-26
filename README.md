@@ -24,6 +24,8 @@ Para que las consultas a la Rest-API funcione se debe proveer un archivo .env en
 
 ## Modelización
 ---
+(https://github.com/mbeta/cde_airflow/blob/refactor/readme/img/ER.jpg)
+
 #### jobs
 Se trabaja como tabla de HECHO las publicaciones de puestos de trabajo
 Para mas información: [API-Reference](https://developer.usajobs.gov/api-reference/get-api-search)
