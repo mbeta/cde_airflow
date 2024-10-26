@@ -24,7 +24,8 @@ Para que las consultas a la Rest-API funcione se debe proveer un archivo .env en
 
 ## Modelización
 ---
-(https://github.com/mbeta/cde_airflow/blob/refactor/readme/img/ER.jpg)
+![Diagrama ER](/img/ER.jpg)
+
 
 #### jobs
 Se trabaja como tabla de HECHO las publicaciones de puestos de trabajo
@@ -115,11 +116,6 @@ Se debera crear un archivo .env en la raiz del proyecto (dentro de /usa_jobs_etl
 
 ```
 
-#### Base de Datos
-Si no cuenta con el schema creado con las tablas, puede utilizar la funcionalidad dentro de db_services.py:
-- drop_schema()
-- create_all_tables()
-
 #### Iniciar Airflow
 Requerimientos previos:
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/)
@@ -135,12 +131,16 @@ Pasos:
     ***User***: airflow
     ***Contraseña***: airflow
 
+![Diagrama ER](/img/Login-Airflow.jpg)
+
 #### Deterner Airflow
 Debera ejecutar:
 ```
 docker-compose down
 ```
 #### DAGs
+![Diagrama ER](/img/DAGs.jpg)
+
 Detalle:
 - **drop_schema_dag**: Dag con funcionalidad para borrar schema de la base de datos. Su ejecucion es A DEMANDA.
 - **etl_dimensions_dag**: Dag con la funcionalidad para actualizar las dimensiones del modelo, realizara la consulta a los servicios con fechas del ultima actualización el dia anterior la fecha de contexto. Fecruencia de ejecución DIARIA.
