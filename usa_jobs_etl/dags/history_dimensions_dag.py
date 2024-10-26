@@ -70,7 +70,7 @@ with DAG(
     },
     description='ETL pipeline para extraccion, transformacion y carga de datos de Dimensiones HISTORICO',
     schedule_interval=None,
-    start_date= datetime(2024, 10, 7),
+    #start_date= datetime(2024, 10, 7),
     catchup=False,
 ) as dag:
 

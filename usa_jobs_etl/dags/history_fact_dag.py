@@ -70,7 +70,7 @@ with DAG(
     },
     description='ETL para extraer datos HISTORICOS de Usa Jobs, transformar y cargar en Redshift ',
     schedule_interval=None,
-    start_date=datetime(2024, 10, 7),
+    #start_date=datetime(2024, 10, 7),
     catchup=False,#para backfill
 ) as dag:
     
