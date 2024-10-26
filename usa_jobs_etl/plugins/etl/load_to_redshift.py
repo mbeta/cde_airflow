@@ -2,6 +2,7 @@ import pandas as pd
 from sqlalchemy import create_engine
 import os
 from dotenv import load_dotenv
+from plugins.etl.db_services import  get_redshift_connection
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -21,13 +22,11 @@ def load_jobs_redshift(df: pd.DataFrame, batch_size: int = 50):
     """
 
     logger.info("Se inicia Proceso de UPSERT para la tabla JOBS")
-    # Crear la conexión a Redshift
-    redshift_conn_string = os.getenv('REDSHIFT_CONN_STRING')
+    
     schema = f'"{os.getenv('REDSHIFT_SCHEMA')}"'
-    engine = create_engine(redshift_conn_string,  isolation_level='READ COMMITTED')
-
+ 
     # Iniciar la conexión y transacción
-    with engine.connect() as conn:
+    with get_redshift_connection() as conn:
         total_rows = len(df)
         logger.info(f'Total de registros a tratar: {total_rows}')
         for start in range(0, total_rows, batch_size):
@@ -153,17 +152,11 @@ def load_organization_redshift(df: pd.DataFrame, batch_size: int = 50):
     """
 
     logger.info("Se inicia Proceso de UPSERT para la dimension ORGANIZATION")
-    # Crear la conexión a Redshift
-    redshift_conn_string = os.getenv('REDSHIFT_CONN_STRING')
+    
     schema = f'"{os.getenv('REDSHIFT_SCHEMA')}"'
-    engine = create_engine(redshift_conn_string)
-
-    # # Listas para almacenar los datos de actualización e inserción
-    # update_queries = []
-    # insert_queries = []
-
+    
     # Iniciar la conexión y transacción
-    with engine.connect() as conn:
+    with get_redshift_connection() as conn:
         total_rows = len(df)
         logger.info(f'Total de registros a tratar: {total_rows}')
         #for _, row in df.iterrows():
@@ -187,9 +180,7 @@ def load_organization_redshift(df: pd.DataFrame, batch_size: int = 50):
                 query_check = f"""
                         SELECT COUNT(*) FROM {schema}.dim_organization
                                 WHERE code = %s
-                        """
-                
-                
+                        """                
                 try:
                     result = conn.execute(query_check, (code)).scalar()
                 except Exception as e:
@@ -257,13 +248,11 @@ def load_categories_redshift(df: pd.DataFrame, batch_size: int = 50):
     """
 
     logger.info("Se inicia Proceso de UPSERT para la dimension JOB CATEGORY")
-    # Crear la conexión a Redshift
-    redshift_conn_string = os.getenv('REDSHIFT_CONN_STRING')
+    
     schema = f'"{os.getenv('REDSHIFT_SCHEMA')}"'
-    engine = create_engine(redshift_conn_string)
 
     # Iniciar la conexión y transacción
-    with engine.connect() as conn:
+    with get_redshift_connection() as conn:
         total_rows = len(df)
         logger.info(f'Total de registros a tratar: {total_rows}')
         for start in range(0, total_rows, batch_size):
@@ -353,17 +342,12 @@ def load_position_types_redshift(df: pd.DataFrame, batch_size: int = 50):
     """
 
     logger.info("Se inicia Proceso de UPSERT para la dimension POSITION TYPE")
-    # Crear la conexión a Redshift
-    redshift_conn_string = os.getenv('REDSHIFT_CONN_STRING')
+    
+    
     schema = f'"{os.getenv('REDSHIFT_SCHEMA')}"'
-    engine = create_engine(redshift_conn_string)
-
-    # # Listas para almacenar los datos de actualización e inserción
-    # update_queries = []
-    # insert_queries = []
 
     # Iniciar la conexión y transacción
-    with engine.connect() as conn:
+    with get_redshift_connection() as conn:
         total_rows = len(df)
         logger.info(f'Total de registros a tratar: {total_rows}')
         for start in range(0, total_rows, batch_size):

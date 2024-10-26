@@ -1,7 +1,7 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.exceptions import AirflowException 
-from plugins.etl import extract_data, transform_data, load_to_redshift
+from plugins.etl import db_services, extract_data, transform_data, load_to_redshift
 from datetime import datetime
 import os
 import logging
@@ -15,6 +15,10 @@ DATA_TEMP = os.getenv('DATA_TEMP')
 def history_job_category(fecha_contexto):
     try:
         logger.info(f'{fecha_contexto}: Se inicia carga HISTORICA de Dimension Job Category')
+        #Se crea tablas si no existen
+        logger.info("Se crea tabla dim_job_category si no existe")
+        db_services.create_job_category_table()
+        
         data_path = extract_data.extract_data_job_categories('', DATA_TEMP)
         logger.info(data_path)
         if(data_path):
@@ -27,6 +31,8 @@ def history_job_category(fecha_contexto):
 def history_position_types(fecha_contexto):
     try:
         logger.info(f'{fecha_contexto}: Se inicia carga HISTORICA de Dimension Position Types')
+        logger.info("Se crea tabla dim_position_type si no existe")
+        db_services.create_position_type_table()
         data_path = extract_data.extract_data_position_type('', DATA_TEMP)
         logger.info(data_path)
         if(data_path):
@@ -41,6 +47,9 @@ def history_position_types(fecha_contexto):
 def history_organizations(fecha_contexto):
     try:
         logger.info(f'{fecha_contexto}: Se inicia carga HISTORICA de Dimension Organizations')
+        logger.info("Se crea tabla dim_organization si no existe")
+        db_services.create_organization_table()
+        
         data_path = extract_data.extract_data_organization('', DATA_TEMP)
         logger.info(data_path)
         if(data_path):

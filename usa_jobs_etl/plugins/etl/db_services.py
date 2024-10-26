@@ -7,33 +7,8 @@ logger = logging.getLogger(__name__)
 
 load_dotenv()
 
-
-def get_redshift_connection():
-    redshift_conn_string = os.getenv('REDSHIFT_CONN_STRING')
-    if not redshift_conn_string:
-        logger.error("'REDSHIFT_CONN_STRING' no está definida o está vacía.")
-        raise ValueError("'REDSHIFT_CONN_STRING' no está definida o está vacía.")
-    
-    engine = create_engine(redshift_conn_string)
-    conn = engine.connect()
-    logger.info("Conexión exitosa a Redshift.")
-    return conn
-
-def create_table(table_name, create_table_sql):
-    """Función genérica para crear una tabla."""
-    schema = f'"{os.getenv("REDSHIFT_SCHEMA")}"'
-    create_table_sql = create_table_sql.format(schema=schema)
-    conn = get_redshift_connection()
-    
-    conn.execute(create_table_sql)
-    logger.info(f"Tabla '{table_name}' creada o ya existía.")
-    conn.close()
-
-
-def create_all_tables():
-    """Crear todas las tablas del esquema."""
-    tables = {
-        'jobs': """
+def query_create_jobs():
+    return """
             CREATE TABLE IF NOT EXISTS {schema}.jobs (
                 object_id VARCHAR(255) PRIMARY KEY,
                 position_id VARCHAR(50),
@@ -53,10 +28,16 @@ def create_all_tables():
                 detail_position_type VARCHAR(255),
                 version_date TIMESTAMP,
                 is_reposted NUMERIC,
-                duration NUMERIC
+                duration NUMERIC,
+                FOREIGN KEY (organization_code) REFERENCES {schema}.dim_organization(code),
+                FOREIGN KEY (department_code) REFERENCES {schema}.dim_organization(code),
+                FOREIGN KEY (job_category_code) REFERENCES {schema}.dim_job_category(code),
+                FOREIGN KEY (position_type_code) REFERENCES {schema}.dim_position_type(code)
             );
-        """,
-        'dim_organization': """
+        """
+
+def query_create_dim_organization():
+    return """
             CREATE TABLE IF NOT EXISTS {schema}.dim_organization (
                 code VARCHAR(10) PRIMARY KEY,
                 name VARCHAR(255) NOT NULL,
@@ -64,8 +45,10 @@ def create_all_tables():
                 last_modified TIMESTAMP,
                 is_disabled VARCHAR(3)
             );
-        """,
-        'dim_job_category': """
+        """
+
+def query_create_dim_job_category():
+    return """
             CREATE TABLE IF NOT EXISTS {schema}.dim_job_category (
                 code VARCHAR(10) PRIMARY KEY,
                 name VARCHAR(255) NOT NULL,
@@ -73,8 +56,10 @@ def create_all_tables():
                 last_modified TIMESTAMP,
                 is_disabled VARCHAR(3)
             );
-        """,
-        'dim_position_type': """
+        """
+
+def query_create_dim_position_type():
+    return """
             CREATE TABLE IF NOT EXISTS {schema}.dim_position_type (
                 code VARCHAR(10) PRIMARY KEY,
                 name VARCHAR(255) NOT NULL,
@@ -82,11 +67,55 @@ def create_all_tables():
                 is_disabled VARCHAR(3)
             );
         """
+
+def get_redshift_connection():
+    redshift_conn_string = os.getenv('REDSHIFT_CONN_STRING')
+    if not redshift_conn_string:
+        logger.error("'REDSHIFT_CONN_STRING' no está definida o está vacía.")
+        raise ValueError("'REDSHIFT_CONN_STRING' no está definida o está vacía.")
+    
+    engine = create_engine(redshift_conn_string, isolation_level='READ COMMITTED')
+    conn = engine.connect()
+    logger.info("Conexión exitosa a Redshift.")
+    return conn
+
+def create_table(table_name, create_table_sql):
+    """Función genérica para crear una tabla."""
+    schema = f'"{os.getenv("REDSHIFT_SCHEMA")}"'
+    create_table_sql = create_table_sql.format(schema=schema)
+    conn = get_redshift_connection()
+    logger.info(f"Ejecutando: {create_table_sql}")
+    conn.execute(create_table_sql)
+    logger.info(f"Tabla '{table_name}' creada o ya existía.")
+    conn.close()
+
+def create_all_tables():
+    """Crear todas las tablas del esquema."""
+    tables = {
+        'jobs': query_create_jobs(),
+        'dim_organization': query_create_dim_organization(),
+        'dim_job_category': query_create_dim_job_category(),
+        'dim_position_type': query_create_dim_position_type()
     }
 
     for table_name, create_sql in tables.items():
         create_table(table_name, create_sql)
+        
+def create_job_table():
+    """Crear la tabla jobs del esquema."""
+    create_table('jobs',  query_create_jobs())
 
+def create_organization_table():
+    """Crear la tabla dim_organization del esquema."""
+    create_table('dim_organization', query_create_dim_organization())
+
+def create_job_category_table():
+    """Crear la tabla dim_job_category del esquema."""
+    create_table('dim_job_category', query_create_dim_job_category())
+
+def create_position_type_table():
+    """Crear la tabla dim_position_type del esquema."""
+    create_table('dim_position_type', query_create_dim_position_type())
 
 def drop_schema():
     """
@@ -116,7 +145,6 @@ def drop_schema():
         conn.execute(drop_table_sql)
         logger.info(f"Tabla '{table[0]}' eliminada exitosamente.")
     conn.close()
-
 
 def get_organization_codes_by_names(names):
     """

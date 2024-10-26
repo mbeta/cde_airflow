@@ -24,7 +24,7 @@ def test_get_redshift_connection(monkeypatch):
     connection = get_redshift_connection()
 
     mock_create_engine.assert_called_once_with(
-        'postgresql://user:password@host:5439/dbname')
+        'postgresql://user:password@host:5439/dbname', isolation_level='READ COMMITTED')
     mock_create_engine.return_value.connect.assert_called_once()
     assert connection == mock_connection
 

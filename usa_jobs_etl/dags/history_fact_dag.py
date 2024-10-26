@@ -3,7 +3,7 @@ from airflow.exceptions import AirflowSkipException
 from airflow.operators.python import PythonOperator
 from airflow.exceptions import AirflowException 
 from datetime import datetime, timedelta
-from plugins.etl import extract_data, transform_data, load_to_redshift
+from plugins.etl import db_services, extract_data, transform_data, load_to_redshift
 import os
 import logging
 
@@ -11,6 +11,15 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 DATA_TEMP = os.getenv('DATA_TEMP')
+
+def control_schema_func():
+    #Se crea tablas si no existen
+    logger.info("Se crea tabla Jobs si no existe")
+    try:
+        db_services.create_job_table()
+    except Exception as e:
+        logger.error(f'Error en el proceso Control schema - ETL de HISTORY Jobs: {str(e)}')
+        raise AirflowException(f'Fallo en el proceso Control schema - ETL de HISTORY Jobs: {str(e)}')
 
 def history_extract_data_func(**kwargs):
     output_parquet = kwargs['output_parquet']
@@ -26,6 +35,7 @@ def history_extract_data_func(**kwargs):
           f'Cantidad en días: {date_posted}, \n' 
           f'Control de fecha: {date_control}')
     try:
+            
         return extract_data.extract_data_jobs(keyword,output_parquet, date_posted, date_control)
     except Exception as e:
         logger.error(f'Error en el proceso HISTORY EXTRACT - ETL de Jobs: {str(e)}')
@@ -63,8 +73,15 @@ with DAG(
     start_date=datetime(2024, 10, 7),
     catchup=False,#para backfill
 ) as dag:
+    
+    # Task 1: Control Schema
+    control_schema_task = PythonOperator(
+        task_id='control_schema',
+        python_callable=control_schema_func,
+        op_kwargs={},
+    )
 
- # Task 1: Extract data
+    # Task 2: Extract data
     history_extract_data_task = PythonOperator(
         task_id='history_extract_data',
         python_callable=history_extract_data_func,
@@ -72,14 +89,14 @@ with DAG(
                    'keyword': 'Software'},
     )
 
-    # Task 2: Transform data
+    # Task 3: Transform data
     history_transform_data_task = PythonOperator(
         task_id='history_transform_data',
         python_callable=history_transform_data_func,
         op_kwargs={},
     )
 
-    # Task 3: Load data into Redshift
+    # Task 4: Load data into Redshift
     history_load_data_task = PythonOperator(
         task_id='history_load_data',
         python_callable=history_load_data_func,
@@ -88,4 +105,4 @@ with DAG(
 
 
 # Definir dependencias
-history_extract_data_task >> history_transform_data_task >> history_load_data_task
+control_schema_task >> history_extract_data_task >> history_transform_data_task >> history_load_data_task

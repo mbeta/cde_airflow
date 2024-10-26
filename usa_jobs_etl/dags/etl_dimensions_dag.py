@@ -1,6 +1,6 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-from plugins.etl import extract_data, transform_data, load_to_redshift
+from plugins.etl import db_services, extract_data, transform_data, load_to_redshift
 from datetime import datetime, timedelta
 import os
 from airflow.exceptions import AirflowException 
@@ -14,6 +14,9 @@ DATA_TEMP = os.getenv('DATA_TEMP')
 def etl_job_category(fecha_contexto):
     #ETL para Dimension Job Category
     try:
+        #Se crea tablas si no existen
+        logger.info("Se crea tabla dim_job_category si no existe")
+        db_services.create_job_category_table()
         logger.info(f'Fecha contexto ejecucion: {fecha_contexto}')
         lastmodified = (datetime.strptime(fecha_contexto, '%Y-%m-%d') - timedelta(days=1)).strftime('%Y-%m-%d')
         logger.info(f'Fecha ultima modificacion para consulta API: {lastmodified}')
@@ -30,6 +33,8 @@ def etl_job_category(fecha_contexto):
 def etl_position_types(fecha_contexto):
     #ETL para Dimension Position Types
     try: 
+        logger.info("Se crea tabla dim_position_type si no existe")
+        db_services.create_position_type_table()
         logger.info(f'Fecha contexto ejecucion: {fecha_contexto}')
         lastmodified = (datetime.strptime(fecha_contexto, '%Y-%m-%d') - timedelta(days=1)).strftime('%Y-%m-%d')
         logger.info(f'Fecha ultima modificacion para consulta API: {lastmodified}')
@@ -48,6 +53,8 @@ def etl_organizations(fecha_contexto):
     
     #ETL para Dimension Organizations
     try:
+        logger.info("Se crea tabla dim_organization si no existe")
+        db_services.create_organization_table()
         logger.info(f'Fecha contexto ejecucion: {fecha_contexto}')
         lastmodified = (datetime.strptime(fecha_contexto, '%Y-%m-%d') - timedelta(days=1)).strftime('%Y-%m-%d')
         logger.info(f'Fecha ultima modificacion para consulta API: {lastmodified}')
