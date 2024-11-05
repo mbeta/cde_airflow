@@ -1,7 +1,20 @@
 # CDE AIRFLOW
 ---
-Proyecto Airflow 
-(Airflow, python, Docker, unittest, mock, GitHub Actions)
+
+## Tecnologías Utilizadas
+
+- ![Apache Airflow](https://img.shields.io/badge/Airflow-2.10.2-017CEE?style=flat&logo=apache-airflow&logoColor=white) - Orquestación de flujos de trabajo
+- ![Python](https://img.shields.io/badge/Python-3.8-blue?style=flat&logo=python&logoColor=white) - Lenguaje principal
+- ![Pandas](https://img.shields.io/badge/Pandas-1.3.3-orange?style=flat&logo=pandas&logoColor=white) - Para manipulación de datos
+- ![AWS Redshift](https://img.shields.io/badge/AWS%20Redshift-ETL-yellow?style=flat&logo=amazon-aws&logoColor=white) - Almacenamiento de datos
+- ![Docker](https://img.shields.io/badge/Docker-Container-blue?style=flat&logo=docker&logoColor=white) - Para contenerización
+- ![Docker Compose](https://img.shields.io/badge/Docker%20Compose-Orchestration-2496ED?style=flat&logo=docker&logoColor=white) - Orquestación de contenedores
+- ![Poetry](https://img.shields.io/badge/Poetry-Dependencias-blueviolet?style=flat&logo=poetry&logoColor=white) - Gestión de dependencias
+- ![Pytest](https://img.shields.io/badge/Pytest-Testing%20Framework-0A9EDC?style=flat&logo=pytest&logoColor=white) - Pruebas unitarias y de integración
+- ![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-CI/CD-2088FF?style=flat&logo=github-actions&logoColor=white) - Integración y despliegue continuo
+
+
+
 
 ## Origen de datos
 ***
